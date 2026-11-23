@@ -1,0 +1,2267 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Toolkit Tangki</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: topbar tetap + sidebar klasifikasi (pohon kategori → grup → modul) + area kerja dua kolom (input | hasil). */
+:root {
+  --bg: #eef1f2;          /* plat baja pucat */
+  --surface: #ffffff;
+  --surface-2: #f6f8f8;
+  --ink: #16212a;
+  --muted: #5a6872;
+  --line: #d3dbdf;
+  --accent: #0e6a78;      /* biru-teal instrumen */
+  --accent-ink: #ffffff;
+  --accent-soft: #dcefF1;
+  --pass: #1c7a45; --pass-bg: #e2f3e9;
+  --warn: #9a5b00; --warn-bg: #fbefd8;
+  --fail: #b3261e; --fail-bg: #fbe3e0;
+  --na: #5a6872;   --na-bg: #e9eef0;
+  --s1: #0e6a78; --s2: #c2701c;
+  --f-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --f-head: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+  --r: 6px;
+  --side-w: 300px;
+  --top-h: 56px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1518; --surface: #172025; --surface-2: #1c272d; --ink: #e3eaee; --muted: #93a3ad; --line: #2b3940;
+    --accent: #4fb8c6; --accent-ink: #062126; --accent-soft: #163840;
+    --pass: #5fd08f; --pass-bg: #143323; --warn: #f0b552; --warn-bg: #3a2b10; --fail: #ff8a80; --fail-bg: #3d1a18; --na: #93a3ad; --na-bg: #222e34;
+    --s1: #4fb8c6; --s2: #f0a058;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1518; --surface: #172025; --surface-2: #1c272d; --ink: #e3eaee; --muted: #93a3ad; --line: #2b3940;
+  --accent: #4fb8c6; --accent-ink: #062126; --accent-soft: #163840;
+  --pass: #5fd08f; --pass-bg: #143323; --warn: #f0b552; --warn-bg: #3a2b10; --fail: #ff8a80; --fail-bg: #3d1a18; --na: #93a3ad; --na-bg: #222e34;
+  --s1: #4fb8c6; --s2: #f0a058;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--f-body); -webkit-text-size-adjust: 100%; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--surface); }
+a { color: var(--accent); }
+h1, h2, h3 { font-family: var(--f-head); line-height: 1.15; text-wrap: balance; margin: 0; }
+h1 { font-size: 1.9rem; font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: 1.3rem; font-weight: 600; }
+h3 { font-size: 1.05rem; font-weight: 600; }
+.num, .code, td.num { font-variant-numeric: tabular-nums; }
+.code { font-family: var(--f-mono); font-size: 0.82em; font-weight: 500; letter-spacing: 0.02em; }
+.muted { color: var(--muted); }
+.small { font-size: 0.85rem; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ---------- Topbar ---------- */
+.topbar {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; height: var(--top-h);
+  display: flex; align-items: center; gap: 16px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  background: var(--surface); border-bottom: 1px solid var(--line);
+}
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); font-family: var(--f-head); font-weight: 700; font-size: 1.15rem; white-space: nowrap; }
+.mark { width: 22px; height: 26px; border: 2.5px solid var(--accent); border-radius: 3px 3px 2px 2px; position: relative; background: linear-gradient(to top, var(--accent-soft) 55%, transparent 55%); }
+.mark::after { content: ""; position: absolute; left: -2.5px; right: -2.5px; top: -6px; height: 6px; border: 2.5px solid var(--accent); border-bottom: 0; border-radius: 50% 50% 0 0 / 100% 100% 0 0; }
+.tank-tag { font-family: var(--f-mono); font-size: 0.8rem; padding: 2px 8px; border: 1px solid var(--line); border-radius: 99px; color: var(--muted); white-space: nowrap; }
+.top-nav { display: flex; gap: 4px; margin-left: 8px; }
+.top-link { text-decoration: none; color: var(--muted); padding: 6px 10px; border-radius: var(--r); font-weight: 500; white-space: nowrap; }
+.top-link:hover { color: var(--ink); background: var(--surface-2); }
+.top-link.active { color: var(--accent); background: var(--accent-soft); }
+.top-act { margin-left: auto; display: flex; gap: 8px; }
+.menu { display: none; background: none; border: 1px solid var(--line); color: var(--ink); border-radius: var(--r); font-size: 1.1rem; padding: 4px 10px; cursor: pointer; }
+
+/* ---------- Layout ---------- */
+.layout { display: grid; grid-template-columns: var(--side-w) minmax(0, 1fr); min-height: calc(100vh - var(--top-h)); }
+.side {
+  position: sticky; top: calc(var(--top-h) + env(safe-area-inset-top, 0px)); align-self: start;
+  height: calc(100vh - var(--top-h) - env(safe-area-inset-top, 0px)); overflow-y: auto;
+  background: var(--surface); border-right: 1px solid var(--line);
+  padding-block: 14px 24px; padding-left: max(14px, env(safe-area-inset-left, 0px)); padding-right: 14px;
+}
+main { min-width: 0; padding-block: 24px 64px; padding-left: max(16px, 2.2vw, env(safe-area-inset-left, 0px)); padding-right: max(16px, 2.2vw, env(safe-area-inset-right, 0px)); outline: none; display: flex; flex-direction: column; gap: 18px; max-width: 1400px; }
+
+.search input { width: 100%; font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface-2); color: var(--ink); }
+.nav-cat { margin-top: 18px; }
+.nav-cat-t { display: flex; align-items: center; gap: 8px; font-family: var(--f-head); font-weight: 600; font-size: 0.98rem; margin-bottom: 6px; }
+.cat-badge { display: inline-flex; align-items: center; justify-content: center; line-height: 1; width: 22px; height: 22px; border-radius: 4px; background: var(--ink); color: var(--bg); font-family: var(--f-mono); font-size: 0.78rem; font-weight: 500; flex: none; }
+.cat-badge.lg { width: 40px; height: 40px; font-size: 1.15rem; border-radius: 6px; }
+.nav-grp { margin: 4px 0 8px 10px; padding-left: 10px; border-left: 1px solid var(--line); }
+.nav-grp-t { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 6px 0 2px; }
+.nav-item { display: grid; grid-template-columns: 10px 46px minmax(0, 1fr); align-items: center; gap: 6px; padding: 4px 6px; border-radius: 4px; text-decoration: none; color: var(--ink); font-size: 0.88rem; line-height: 1.3; }
+.nav-item:hover { background: var(--surface-2); }
+.nav-item.active { background: var(--accent-soft); }
+.nav-item .code { color: var(--muted); }
+.nav-item.active .code { color: var(--accent); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--na); }
+.dot.st-pass { background: var(--pass); } .dot.st-warn { background: var(--warn); } .dot.st-fail { background: var(--fail); } .dot.st-na { background: var(--line); }
+.side-foot { font-size: 0.75rem; color: var(--muted); margin-top: 24px; line-height: 1.45; }
+.pad { padding: 8px; }
+.side-links { display: none; }
+
+/* ---------- Page header ---------- */
+.page-h { display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { margin: 0; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); font-weight: 600; }
+.lead { margin: 0; max-width: 72ch; color: var(--muted); }
+.crumb { font-size: 0.85rem; color: var(--muted); }
+.crumb a { text-decoration: none; }
+.refs-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.ref { font-family: var(--f-mono); font-size: 0.76rem; padding: 2px 8px; border-radius: 4px; background: var(--surface); border: 1px solid var(--line); }
+.params { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
+.params .pl { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; margin-right: 4px; }
+.param { display: inline-flex; align-items: center; gap: 6px; font-size: 0.88rem; padding: 3px 10px 3px 4px; border-radius: 99px; background: var(--accent-soft); }
+.param b { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 18px; height: 18px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font-size: 0.7rem; font-family: var(--f-mono); }
+
+.banner { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; padding: 10px 14px; border-radius: var(--r); background: var(--warn-bg); color: var(--ink); border: 1px solid color-mix(in srgb, var(--warn) 35%, transparent); font-size: 0.9rem; }
+.banner p { margin: 0; flex: 1 1 320px; }
+
+/* ---------- KPI & home ---------- */
+.kpis { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
+.kpi { display: flex; align-items: baseline; gap: 8px; padding: 8px 14px; border-radius: var(--r); background: var(--surface); border: 1px solid var(--line); }
+.kpi .n { font-family: var(--f-head); font-size: 1.6rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.kpi.st-pass .n { color: var(--pass); } .kpi.st-warn .n { color: var(--warn); } .kpi.st-fail .n { color: var(--fail); }
+.cat-block { display: flex; flex-direction: column; gap: 14px; padding-top: 8px; }
+.cat-h { display: flex; gap: 14px; align-items: center; }
+.cat-h p { margin: 2px 0 0; }
+.trace { display: flex; flex-direction: column; gap: 8px; }
+.trace-tbl { border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); overflow: hidden; }
+.tr { display: grid; grid-template-columns: 64px minmax(150px, 1.1fr) minmax(0, 2fr) minmax(130px, 0.9fr) 128px; gap: 12px; align-items: start; padding: 10px 14px; border-top: 1px solid var(--line); text-decoration: none; color: var(--ink); }
+.tr:first-child { border-top: 0; }
+a.tr:hover { background: var(--surface-2); }
+.tr.th { background: var(--surface-2); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+.tr .tt { font-weight: 600; }
+.tr .code { color: var(--accent); padding-top: 2px; }
+.chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.chips i { font-style: normal; font-size: 0.8rem; padding: 1px 8px; border-radius: 99px; background: var(--surface-2); border: 1px solid var(--line); }
+.refs { font-family: var(--f-mono); font-size: 0.74rem; color: var(--muted); line-height: 1.5; }
+
+/* ---------- Pills & verdict ---------- */
+.pill { display: inline-block; font-size: 0.74rem; font-weight: 600; padding: 2px 9px; border-radius: 99px; white-space: nowrap; }
+.pill.st-pass { color: var(--pass); background: var(--pass-bg); }
+.pill.st-warn { color: var(--warn); background: var(--warn-bg); }
+.pill.st-fail { color: var(--fail); background: var(--fail-bg); }
+.pill.st-na { color: var(--na); background: var(--na-bg); }
+.verdict { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; padding: 12px 16px; border-radius: var(--r); border-left: 5px solid; background: var(--surface); }
+.verdict .vt { font-family: var(--f-head); font-size: 1.35rem; font-weight: 700; }
+.verdict .vs { font-size: 0.85rem; color: var(--muted); }
+.verdict.st-pass { border-color: var(--pass); } .verdict.st-pass .vt { color: var(--pass); }
+.verdict.st-warn { border-color: var(--warn); } .verdict.st-warn .vt { color: var(--warn); }
+.verdict.st-fail { border-color: var(--fail); } .verdict.st-fail .vt { color: var(--fail); }
+.verdict.st-na { border-color: var(--na); }
+
+/* ---------- Module ---------- */
+.mod-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 18px; align-items: start; }
+.results { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; min-width: 0; }
+.card.flush { padding: 0; overflow: hidden; }
+.card.err { color: var(--fail); background: var(--fail-bg); }
+.inputs { display: flex; flex-direction: column; gap: 14px; }
+.sec-h, .tbl-h { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.hint { margin: -8px 0 0; font-size: 0.8rem; color: var(--muted); }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px 16px; }
+.form-grid.one { grid-template-columns: 1fr; }
+.form-grid.card { padding: 16px; }
+.fld { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.fl { font-size: 0.84rem; color: var(--muted); display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.fl em { font-style: normal; font-family: var(--f-mono); font-size: 0.76rem; color: var(--ink); background: var(--surface-2); padding: 0 5px; border-radius: 3px; }
+input, select { font: inherit; color: var(--ink); background: var(--surface-2); border: 1px solid var(--line); border-radius: 4px; padding: 7px 9px; min-width: 0; width: 100%; }
+input:focus, select:focus { border-color: var(--accent); background: var(--surface); outline: none; box-shadow: 0 0 0 3px var(--accent-soft); }
+.form-grid.one .fld { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); align-items: center; gap: 10px; }
+.lnk-ic { color: var(--accent); font-size: 0.8rem; }
+.relink { font: inherit; font-size: 0.72rem; border: 0; background: var(--accent-soft); color: var(--accent); border-radius: 3px; padding: 0 6px; cursor: pointer; }
+
+.tbl-wrap { overflow-x: auto; max-width: 100%; }
+table { border-collapse: collapse; width: 100%; font-size: 0.88rem; }
+table.edit th { font-size: 0.74rem; text-align: left; color: var(--muted); font-weight: 600; padding: 4px 4px 6px; white-space: nowrap; }
+table.edit td { padding: 2px; }
+table.edit input, table.edit select { padding: 5px 7px; min-width: 70px; font-family: var(--f-mono); font-size: 0.85rem; }
+table.edit select { font-family: var(--f-body); min-width: 120px; }
+td.rn { color: var(--muted); font-family: var(--f-mono); font-size: 0.78rem; text-align: right; padding-right: 6px; }
+.ic { border: 0; background: none; color: var(--muted); font-size: 1.1rem; cursor: pointer; padding: 2px 6px; border-radius: 4px; }
+.ic:hover { color: var(--fail); background: var(--fail-bg); }
+table.checks th, table.out th { text-align: left; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); padding: 9px 12px; background: var(--surface-2); border-bottom: 1px solid var(--line); white-space: nowrap; }
+table.checks td, table.out td { padding: 8px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.checks tr:last-child td, table.out tr:last-child td { border-bottom: 0; }
+table.out td.num { font-family: var(--f-mono); font-size: 0.84rem; white-space: nowrap; }
+th.r, td.r { text-align: right; white-space: nowrap; }
+td.r.num { font-family: var(--f-mono); font-size: 0.84rem; }
+td small { color: var(--muted); }
+.ref-c { font-family: var(--f-mono); font-size: 0.74rem; color: var(--muted); white-space: nowrap; }
+tr.row-fail td:first-child { box-shadow: inset 3px 0 0 var(--fail); }
+tr.row-warn td:first-child { box-shadow: inset 3px 0 0 var(--warn); }
+
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.tile { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); min-width: 0; }
+.tl { font-size: 0.76rem; color: var(--muted); }
+.tv { font-family: var(--f-head); font-size: 1.45rem; font-weight: 600; overflow-wrap: anywhere; }
+.tv small { font-family: var(--f-body); font-size: 0.78rem; font-weight: 400; color: var(--muted); margin-left: 4px; }
+.ts { font-size: 0.74rem; color: var(--muted); font-family: var(--f-mono); }
+.notes { margin: 0; padding-left: 18px; color: var(--muted); font-size: 0.85rem; display: flex; flex-direction: column; gap: 4px; }
+
+/* ---------- Chart ---------- */
+.chart-card { display: flex; flex-direction: column; gap: 8px; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 0.8rem; color: var(--muted); }
+.lg { display: inline-flex; align-items: center; gap: 6px; }
+.sw { display: inline-block; width: 14px; height: 10px; border-radius: 2px; }
+.sw.s1 { background: var(--s1); } .sw.s2 { background: var(--s2); }
+.sw.lim { background: none; border-top: 2px dashed var(--fail); height: 0; }
+.sw.lim2 { background: none; border-top: 2px dashed var(--warn); height: 0; }
+.svg-wrap { overflow-x: auto; }
+svg { width: 100%; height: auto; min-width: 420px; display: block; }
+svg .grid { stroke: var(--line); stroke-width: 1; }
+svg .zero { stroke: var(--muted); stroke-width: 1; }
+svg .ax { fill: var(--muted); font: 11px var(--f-mono); }
+svg .ax-l { fill: var(--muted); font: 11px var(--f-body); }
+svg .bar.s1 { fill: var(--s1); fill-opacity: 0.85; }
+svg .ln { stroke-width: 2; }
+svg .ln.s1 { stroke: var(--s1); } svg .ln.s2 { stroke: var(--s2); stroke-dasharray: 6 4; }
+svg .ln.lim { stroke: var(--fail); stroke-dasharray: 5 4; }
+svg .pt { stroke: var(--surface); stroke-width: 1.5; }
+svg .pt.s1 { fill: var(--s1); } svg .pt.s2 { fill: var(--s2); } svg .pt.lim { fill: var(--fail); }
+svg .pt.hl { fill: var(--warn); }
+svg .hl { stroke-width: 1.5; stroke-dasharray: 6 4; }
+svg .hl.lim { stroke: var(--fail); } svg .hl.lim2 { stroke: var(--warn); }
+svg .hl-t { font: 11px var(--f-mono); }
+svg .hl-t.lim { fill: var(--fail); } svg .hl-t.lim2 { fill: var(--warn); }
+
+/* ---------- Buttons ---------- */
+.btn { font: inherit; font-weight: 500; font-size: 0.9rem; padding: 7px 14px; border-radius: var(--r); border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); cursor: pointer; white-space: nowrap; }
+.btn:hover { filter: brightness(1.08); }
+.btn.ghost { background: transparent; color: var(--accent); border-color: var(--line); }
+.btn.ghost:hover { border-color: var(--accent); }
+.btn.sm { font-size: 0.82rem; padding: 5px 10px; }
+.btn.armed { background: var(--fail); border-color: var(--fail); color: #fff; }
+.row-btns { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.chk { display: inline-flex; gap: 6px; align-items: center; font-size: 0.9rem; }
+.chk input { width: auto; }
+
+/* ---------- Ringkasan ---------- */
+.rep { display: flex; flex-direction: column; gap: 10px; padding: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
+.rep .verdict { display: none; }
+.rep .tiles .tile { background: var(--surface-2); }
+.rep-h { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.rep-h h2 { font-size: 1.1rem; flex: 1 1 auto; }
+.rep-h .code { text-decoration: none; }
+.rep p { margin: 0; }
+
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(20px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: var(--r); font-size: 0.9rem; z-index: 40; max-width: calc(100% - 32px); }
+.copy-fb { position: fixed; left: -9999px; }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1100px) {
+  .mod-grid { grid-template-columns: 1fr; }
+  .tr { grid-template-columns: 60px minmax(0, 1fr) 118px; }
+  .tr .chips, .tr .refs { grid-column: 2 / 4; }
+  .tr.th span:nth-child(3), .tr.th span:nth-child(4) { display: none; }
+}
+@media (max-width: 860px) {
+  .menu { display: block; }
+  .top-nav, .tank-tag { display: none; }
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .side { display: none; position: fixed; z-index: 25; left: 0; right: 0; top: calc(var(--top-h) + env(safe-area-inset-top, 0px)); height: auto; bottom: 0; border-right: 0; padding-right: max(14px, env(safe-area-inset-right, 0px)); }
+  body.nav-open .side { display: block; }
+  .side-links { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 12px; }
+}
+@media (max-width: 520px) {
+  h1 { font-size: 1.5rem; }
+  .top-act .ghost { display: none; }
+  .brand span:last-child { font-size: 1rem; }
+  .form-grid.one .fld { grid-template-columns: 1fr; gap: 4px; }
+  .tr { grid-template-columns: minmax(0, 1fr) auto; }
+  .tr .code { grid-column: 1 / -1; }
+  .tr .chips, .tr .refs { grid-column: 1 / -1; }
+  .tr.th { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+@media print {
+  .topbar, .side, .no-print, .banner, .crumb { display: none !important; }
+  .layout { display: block; }
+  main { padding: 0; max-width: none; }
+  body { background: #fff; color: #000; font-size: 11pt; }
+  .rep { break-inside: avoid; border-color: #bbb; }
+  .card, .tile { border-color: #bbb; }
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <button class="menu" id="menu" aria-label="Buka navigasi">☰</button>
+  <a class="brand" href="#beranda"><span class="mark" aria-hidden="true"></span><span>Toolkit Tangki</span></a>
+  <span class="tank-tag" id="tank-tag"></span>
+  <nav class="top-nav">
+    <a class="top-link" href="#beranda">Klasifikasi</a>
+    <a class="top-link" href="#tangki">Data Tangki</a>
+    <a class="top-link" href="#ringkasan">Ringkasan</a>
+  </nav>
+  <div class="top-act">
+    <button class="btn ghost sm" id="btn-import">Buka proyek</button>
+    <button class="btn sm" id="btn-export">Simpan proyek</button>
+    <input type="file" id="file" accept=".json,application/json" hidden>
+  </div>
+</header>
+<div class="layout">
+  <aside class="side" aria-label="Navigasi modul">
+    <nav class="side-links"><a class="top-link" href="#beranda">Klasifikasi</a><a class="top-link" href="#tangki">Data Tangki</a><a class="top-link" href="#ringkasan">Ringkasan</a><button class="btn ghost sm" type="button" onclick="document.getElementById('file').click()">Buka proyek</button></nav>
+    <label class="search"><span class="sr">Cari modul atau parameter</span><input id="q" type="search" placeholder="Cari: plumbness, annular, 4.4.5…"></label>
+    <div id="nav"></div>
+    <p class="side-foot">Referensi: API Std 653 5th Ed. (2014), API Std 650 (2020). Hasil bersifat alat bantu engineering; keputusan akhir tetap oleh inspector / engineer berwenang.</p>
+  </aside>
+  <main id="main" tabindex="-1"></main>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+<script>
+/* Toolkit Tangki — data tabel referensi API 653 (5th Ed. 2014) & API 650 (2020).
+ * Semua nilai disalin dari tabel/standar; kurva grafik (Figure B.11/B.12) didigitasi
+ * dari gambar dan bersifat pendekatan — verifikasi terhadap dokumen asli bila hasil kritis.
+ */
+(function (root) {
+  const D = {};
+
+  /* API 653 Table 4.1 — Maximum Allowable Shell Stresses (psi).
+   * [nama, Y, T]. S & St dihitung dari Y,T per 4.3.3.1/4.3.3.2 (dibulatkan 100 psi),
+   * hasilnya identik dengan Table 4.1. */
+  D.mat653 = [
+    ['A283-C', 30000, 55000], ['A285-C', 30000, 55000], ['A36', 36000, 58000],
+    ['A131-A, B, CS', 34000, 58000], ['A131-EH 36', 51000, 71000],
+    ['A573-58', 32000, 58000], ['A573-65', 35000, 65000], ['A573-70', 42000, 70000],
+    ['A516-55', 30000, 55000], ['A516-60', 32000, 60000], ['A516-65', 35000, 65000],
+    ['A516-70', 38000, 70000], ['A662-B', 40000, 65000], ['A662-C', 43000, 70000],
+    ['A537-Class 1', 50000, 70000], ['A537-Class 2', 60000, 80000],
+    ['A633-C, D', 50000, 70000], ['A678-A', 50000, 70000], ['A678-B', 60000, 80000],
+    ['A737-B', 50000, 70000], ['A841', 50000, 70000],
+    ['A10 (obsolete)', 30000, 55000], ['A7 (obsolete)', 33000, 60000],
+    ['A442-55 (obsolete)', 30000, 55000], ['A442-60 (obsolete)', 32000, 60000],
+    ['CSA G40.21 38W', 38000, 60000], ['CSA G40.21 44W', 44000, 65000],
+    ['CSA G40.21 50W', 50000, 65000], ['CSA G40.21 50WT', 50000, 70000],
+    ['Unknown (tidak diketahui)', 30000, 55000]
+  ];
+
+  /* API 650 Table 5.2a (SI) — [nama, Y MPa, T MPa, Sd MPa, St MPa] */
+  D.mat650 = [
+    ['A283M C', 205, 380, 137, 154], ['A285M C', 205, 380, 137, 154],
+    ['A131M A, B', 235, 400, 157, 171], ['A36M', 250, 400, 160, 171],
+    ['A131M EH 36', 360, 490, 196, 210], ['A573M 400', 220, 400, 147, 165],
+    ['A573M 450', 240, 450, 160, 180], ['A573M 485', 290, 485, 193, 208],
+    ['A516M 380', 205, 380, 137, 154], ['A516M 415', 220, 415, 147, 165],
+    ['A516M 450', 240, 450, 160, 180], ['A516M 485', 260, 485, 173, 195],
+    ['A662M B', 275, 450, 180, 193], ['A662M C', 295, 485, 194, 208],
+    ['A537M 1 (t ≤ 65)', 345, 485, 194, 208], ['A537M 2 (t ≤ 65)', 415, 550, 220, 236],
+    ['A633M C, D (t ≤ 65)', 345, 485, 194, 208], ['A737M B', 345, 485, 194, 208],
+    ['A841M Class 1', 345, 485, 194, 208], ['A841M Class 2', 415, 550, 220, 236],
+    ['CSA G40.21M 260W', 260, 410, 164, 176], ['CSA G40.21M 300W', 300, 440, 176, 189],
+    ['CSA G40.21M 350W', 350, 450, 180, 193],
+    ['National 235', 235, 365, 137, 154], ['National 250', 250, 400, 157, 171],
+    ['National 275', 275, 430, 167, 184],
+    ['ISO 630 S275 (t ≤ 16)', 275, 410, 164, 176], ['ISO 630 S355 (t ≤ 16)', 355, 470, 188, 201],
+    ['EN 10025 S275 (t ≤ 16)', 275, 410, 164, 176], ['EN 10025 S355 (t ≤ 16)', 355, 470, 188, 201]
+  ];
+
+  /* API 653 Table 4.2 — joint efficiency (dipilih user) */
+  D.jointEff653 = [
+    { v: 1.0, l: 'API 650 ed.7+ (1980–kini) Butt, Basic Standard — 1.00' },
+    { v: 0.85, l: 'API 650 ed.7+ Butt, Annex A Spot RT — 0.85' },
+    { v: 0.70, l: 'API 650 ed.7+ Butt, Annex A No RT — 0.70' },
+    { v: 0.85, l: 'API 650 ed.1–6 (1961–1978) Butt, Basic — 0.85' },
+    { v: 1.0, l: 'API 650 ed.1–6 Butt, Annex D & G — 1.00' },
+    { v: 0.85, l: 'API 12C ed.14–15 (1957–1958) Butt — 0.85' },
+    { v: 0.75, l: 'API 12C ed.3–13 Lap (double, t ≤ 3/8") — 0.75' },
+    { v: 0.85, l: 'API 12C ed.3–13 Butt — 0.85' },
+    { v: 0.70, l: 'API 12C Lap (double, t ≤ 7/16") — 0.70' },
+    { v: 0.70, l: 'Unknown, Butt — 0.70' },
+    { v: 0.35, l: 'Unknown, Lap (single) — 0.35' },
+    { v: 1.0, l: 'Jauh dari las ≥ max(1", 2t) — E = 1.0 (4.3.3.1)' }
+  ];
+
+  /* API 653 Table 4.3 — riveted joint efficiency */
+  D.jointRivet = [
+    { v: 0.45, l: 'Lap, 1 baris — 0.45' }, { v: 0.60, l: 'Lap, 2 baris — 0.60' },
+    { v: 0.70, l: 'Lap, 3 baris — 0.70' }, { v: 0.75, l: 'Lap, 4 baris — 0.75' },
+    { v: 0.75, l: 'Butt, 2 baris — 0.75' }, { v: 0.85, l: 'Butt, 3 baris — 0.85' },
+    { v: 0.90, l: 'Butt, 4 baris — 0.90' }, { v: 0.91, l: 'Butt, 5 baris — 0.91' },
+    { v: 0.92, l: 'Butt, 6 baris — 0.92' }, { v: 1.0, l: '≥ 6" dari rivet — 1.00' }
+  ];
+
+  /* API 653 Table 4.4 — bottom plate minimum thickness at next inspection (in) */
+  D.bottomMin653 = [
+    { v: 0.10, l: 'Tanpa sarana deteksi & containment kebocoran bottom — 0.10 in (2.54 mm)' },
+    { v: 0.05, l: 'Dengan sarana deteksi & containment kebocoran (RPB) — 0.05 in (1.27 mm)' },
+    { v: 0.05, l: 'Reinforced lining > 0.05 in per API 652 — 0.05 in (1.27 mm)' }
+  ];
+
+  /* API 653 Table 4.5 — annular plate thickness (in), SG < 1.0.
+   * rows: batas atas tebal shell course-1 (in); cols: batas stress (psi, "<") */
+  D.annular653 = {
+    tRows: [0.75, 1.0, 1.25, 1.5, Infinity],
+    sCols: [24300, 27000, 29700, 32400],
+    val: [
+      [0.17, 0.20, 0.23, 0.30],
+      [0.17, 0.22, 0.31, 0.38],
+      [0.17, 0.26, 0.38, 0.48],
+      [0.22, 0.34, 0.47, 0.59],
+      [0.27, 0.40, 0.53, 0.68]
+    ]
+  };
+
+  /* API 650 Table 5.1a (SI) — annular plate thickness (mm).
+   * rows: batas atas tebal shell course-1 (mm, "≤"); cols: stress (MPa, "≤") */
+  D.annular650 = {
+    tRows: [19, 25, 32, 40, 45],
+    sCols: [190, 210, 220, 250],
+    val: [
+      [6, 6, 7, 9],
+      [6, 7, 10, 11],
+      [6, 9, 12, 14],
+      [8, 11, 14, 17],
+      [9, 13, 16, 19]
+    ]
+  };
+
+  /* API 650 5.6.1.1 — minimum nominal shell thickness by D (m) */
+  D.shellMin650 = [
+    { dMax: 15, t: 5 }, { dMax: 36, t: 6 }, { dMax: 60.0001, t: 8 }, { dMax: Infinity, t: 10 }
+  ];
+
+  /* Roundness: API 650 7.5.3 (mm) & API 653 Table 10.2 (in) — batas D (ft) */
+  D.roundness = [
+    { dMaxFt: 40, mm: 13, inch: 0.5 },
+    { dMaxFt: 150, mm: 19, inch: 0.75 },
+    { dMaxFt: 250, mm: 25, inch: 1.0 },
+    { dMaxFt: Infinity, mm: 32, inch: 1.25 }
+  ];
+
+  /* API 650 8.5.2 d) — max weld reinforcement (mm): [tMax, vertical, horizontal] */
+  D.weldReinf650 = [
+    [13, 2.5, 3], [25, 3, 5], [Infinity, 5, 6]
+  ];
+
+  /* API 653 B.3.2.2 — K factor: [Dmax ft, open-top, fixed roof] */
+  D.settleK = [
+    [50, 28.7, 10.5], [80, 7.8, 5.8], [120, 6.5, 3.9], [180, 4.0, 2.3],
+    [240, 3.6, null], [300, 2.4, null]
+  ];
+
+  /* API 653 Table 6.1 — tank safeguard credits (tahun) */
+  D.safeguards = [
+    { k: 'frp', l: 'i. Fiberglass-reinforced lining bottom (API RP 652)', yrs: 5 },
+    { k: 'thin', l: 'ii. Internal thin-film coating (API RP 652)', yrs: 2 },
+    { k: 'cp', l: 'iii. Cathodic protection soil-side (API RP 651)', yrs: 5 },
+    { k: 'rpb', l: 'iv. Release prevention barrier (API 650 Annex I)', yrs: 10 },
+    { k: 'ss', l: 'vi. Bottom stainless steel (Annex SC + S/X), risiko sangat rendah', yrs: 10 }
+  ];
+
+  /* API 653 Figure B.11 (Bew, lap weld ≈ sejajar shell) & Figure B.12 (Be, tanpa las /
+   * butt / lap tegak lurus shell). Titik [R ft, B in] per diameter (ft). DIGITASI. */
+  D.edgeBew = {
+    20: [[0, 2], [4.53, 2], [6, 2.46]],
+    30: [[0, 2], [3.34, 2], [6, 3.0]],
+    40: [[0, 2], [2.64, 2], [6, 3.45]],
+    50: [[0, 2], [2.24, 2], [6, 3.85]],
+    60: [[0, 2], [1.9, 2], [6, 4.25]],
+    80: [[0, 2], [1.5, 2], [4, 3.86], [6, 4.82]],
+    100: [[0, 2], [1.5, 2], [1.75, 2.5], [4, 4.08], [6, 5.43]],
+    120: [[0, 2], [1.5, 2], [2.0, 2.95], [4, 4.54], [6, 5.98]],
+    160: [[0, 2], [1.5, 2], [2.52, 3.98], [3, 4.42], [4, 5.2], [5, 6.07], [6, 6.9]]
+  };
+  D.edgeBe = {
+    20: [[0, 2], [3.34, 2], [6, 2.97]],
+    30: [[0, 2], [2.51, 2], [6, 3.6]],
+    40: [[0, 2], [1.88, 2], [6, 4.22]],
+    50: [[0, 2], [1.67, 2], [6, 4.67]],
+    60: [[0, 2], [1.5, 2], [4, 4.06], [6, 5.13]],
+    80: [[0, 2], [1.5, 2], [1.94, 2.9], [4, 4.35], [6, 5.97]],
+    100: [[0, 2], [1.5, 2], [2.25, 3.5], [4, 5.09], [6, 6.64]],
+    120: [[0, 2], [1.5, 2], [2.6, 4.2], [4, 5.75], [6, 7.24]],
+    160: [[0, 2], [1.5, 2], [3.44, 5.86], [5.53, 8.0], [6, 8.0]]
+  };
+
+  root.TKData = D;
+  if (typeof module !== 'undefined') module.exports = D;
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* Toolkit Tangki — mesin perhitungan (fungsi murni, tanpa DOM).
+ * Input SI (m, mm, MPa) kecuali disebut lain; rumus API 653 dihitung dalam USC lalu
+ * dikonversi balik. Setiap fungsi mengembalikan objek angka agar mudah diuji.
+ */
+(function (root) {
+  const DATA = root.TKData || (typeof require !== 'undefined' ? require('./data.js') : {});
+  const C = {};
+  const MM_PER_IN = 25.4, M_PER_FT = 0.3048, PSI_PER_MPA = 145.0377;
+  C.U = { MM_PER_IN, M_PER_FT, PSI_PER_MPA };
+  const ft = m => m / M_PER_FT;
+  const inch = mm => mm / MM_PER_IN;
+  const mm = i => i * MM_PER_IN;
+  C.ft = ft; C.inch = inch; C.mm = mm;
+  const r100 = x => Math.round(x / 100) * 100;
+
+  /* ---------- Material & tegangan izin API 653 4.3.3.1 / 4.3.3.2 ---------- */
+  C.stress653 = function (Y, T, lowerTwo) {
+    const Tc = Math.min(T, 80000);
+    return lowerTwo
+      ? { S: r100(Math.min(0.80 * Y, 0.429 * Tc)), St: r100(Math.min(0.88 * Y, 0.472 * Tc)) }
+      : { S: r100(Math.min(0.88 * Y, 0.472 * Tc)), St: r100(Math.min(0.90 * Y, 0.519 * Tc)) };
+  };
+
+  /* tmin API 653 4.3.3.1. Dft, Hft, S psi. whole=true → (H−1). Hasil inch. */
+  C.tmin653 = function ({ Dft, Hft, G, S, E, whole = true }) {
+    const h = whole ? Math.max(Hft - 1, 0) : Math.max(Hft, 0);
+    const t = 2.6 * h * Dft * G / (S * E);
+    return { raw: t, tmin: Math.max(t, 0.1), floored: t < 0.1 };
+  };
+
+  /* Ht API 653 4.3.3.2 (ft, dari dasar course / dasar L) */
+  C.ht653 = function ({ St, E, t, Dft, whole = true }) {
+    return St * E * t / (2.6 * Dft) + (whole ? 1 : 0);
+  };
+
+  /* Evaluasi seluruh shell course (API 653 4.3.3.1 a, 4.3.3.2 a, 6.3.2, 6.3.3) */
+  C.shellCourses653 = function ({ D, HL, G, courses, riveted }) {
+    const Dft = ft(D);
+    let z = 0; // elevasi dasar course (m)
+    const rows = [];
+    let testLimit = Infinity;
+    courses.forEach((c, i) => {
+      const lower = i < 2;
+      let S, St;
+      if (riveted) { S = 21000; St = 21000; }
+      else if (c.Y && c.T) ({ S, St } = C.stress653(c.Y, c.T, lower));
+      const H = HL - z; // m
+      const E = c.E || 1;
+      const tm = C.tmin653({ Dft, Hft: ft(H), G, S, E, whole: true });
+      const tAct = inch(c.tAct);
+      const ok = H <= 0 ? true : tAct >= tm.tmin;
+      let CR = null, RL = null;
+      if (c.tPrev > 0 && c.years > 0) {
+        CR = (c.tPrev - c.tAct) / c.years; // mm/yr
+        if (CR > 0) RL = (c.tAct - mm(tm.tmin)) / CR;
+      }
+      const RCA = (tAct - tm.tmin) * 1000; // mils
+      const N = CR != null ? inch(CR) * 1000 : null; // mpy
+      const Ht = C.ht653({ St, E, t: tAct, Dft, whole: true }) * M_PER_FT; // m dari dasar course
+      const testLevel = z + Ht;
+      if (H > 0) testLimit = Math.min(testLimit, testLevel);
+      rows.push({
+        n: i + 1, z, H, S, St, E, tminIn: tm.tmin, tminMm: mm(tm.tmin), floored: tm.floored,
+        tAct: c.tAct, ok, CR, RL, RCA, N, HtFromCourse: Ht, testLevel, aboveLiquid: H <= 0
+      });
+      z += c.w / 1000;
+    });
+    return { rows, testLimit, shellHeight: z };
+  };
+
+  /* ---------- LTA API 653 4.3.2.1 ---------- */
+  C.lta653 = function ({ D, t2, readings, spacing }) {
+    const Lin = Math.min(3.7 * Math.sqrt(ft(D) * inch(t2)), 40);
+    const Lmm = mm(Lin);
+    let t1 = null, idx = -1, n = 0;
+    if (readings.length) {
+      n = spacing > 0 ? Math.max(Math.round(Lmm / spacing) + 1, 5) : readings.length;
+      n = Math.min(n, readings.length);
+      for (let i = 0; i + n <= readings.length; i++) {
+        const avg = readings.slice(i, i + n).reduce((a, b) => a + b, 0) / n;
+        if (t1 === null || avg < t1) { t1 = avg; idx = i; }
+      }
+    }
+    return { Lin, Lmm, t1, idx, n };
+  };
+
+  /* ---------- API 650 5.6.3 1-foot method (SI) ---------- */
+  C.shellMinNominal650 = function (D) {
+    return DATA.shellMin650.find(r => D < r.dMax).t;
+  };
+  C.oneFoot650 = function ({ D, H, G, Sd, St, CA }) {
+    const h = Math.max(H - 0.3, 0);
+    const td = 4.9 * D * h * G / Sd + CA;
+    const tt = 4.9 * D * h / St;
+    return { td, tt };
+  };
+
+  /* ---------- Bottom API 653 4.4.5 ---------- */
+  C.mrt653 = function ({ RTbc, RTip, StPr, UPr, Or }) {
+    const base = Math.min(RTbc, RTip);
+    return { base, MRT: base - Or * (StPr + UPr) };
+  };
+  C.maxInterval653 = function ({ base, StPr, UPr, MRTmin, cap }) {
+    const rate = StPr + UPr;
+    if (rate <= 0) return cap;
+    return Math.max(0, Math.min((base - MRTmin) / rate, cap));
+  };
+
+  /* Annular API 653 Table 4.5 (SG<1). t1 in, stress psi */
+  C.annular653 = function ({ tShell, stress }) {
+    const T = DATA.annular653;
+    const r = T.tRows.findIndex(x => tShell <= x);
+    const ci = T.sCols.findIndex(x => stress < x);
+    if (ci < 0) return { outOfTable: true };
+    const step = T.val[r][ci];
+    // interpolasi linier antar batas kolom
+    let interp = step;
+    if (ci > 0) {
+      const s0 = T.sCols[ci - 1], s1 = T.sCols[ci];
+      const v0 = T.val[r][ci - 1], v1 = T.val[r][ci];
+      interp = v0 + (v1 - v0) * (stress - s0) / (s1 - s0);
+    } else interp = T.val[r][0];
+    return { row: r, col: ci, step, interp };
+  };
+  C.annular650Lookup = function (tShell, stress) {
+    const T = DATA.annular650;
+    const r = T.tRows.findIndex(x => tShell <= x);
+    const ci = T.sCols.findIndex(x => stress <= x);
+    if (r < 0 || ci < 0) return null;
+    return { row: r, col: ci, tb: T.val[r][ci] };
+  };
+
+  /* ---------- Wind girder API 650 5.9.6 (SI) ---------- */
+  C.windH1 = function ({ t, D, V, Pwv }) {
+    const pwv = Pwv > 0 ? Pwv : 1.48 * Math.pow(V / 190, 2);
+    const Pwd = pwv + 0.24;
+    const H1 = 9.47 * t * Math.sqrt(Math.pow(t / D, 3)) * (1.72 / Pwd);
+    return { Pwv: pwv, Pwd, H1 };
+  };
+  C.transformed = function (courses, tUni) {
+    return courses.map(c => ({ ...c, Wtr: c.w * Math.pow(tUni / c.t, 2.5) }));
+  };
+
+  /* ---------- Roof API 650 5.10.5 / 5.10.6 (SI) ---------- */
+  C.coneRoof650 = function ({ D, thetaDeg, B, U, E, CA }) {
+    const s = Math.sin(thetaDeg * Math.PI / 180);
+    const tB = 2 * 1000 * D / s * Math.sqrt(B / (1000 * E)) + CA;
+    const tU = 2 * 1000 * D / s * Math.sqrt(U / (1.33 * 1000 * E)) + CA;
+    return { tB, tU, t: Math.max(tB, tU, 5) };
+  };
+  C.domeRoof650 = function ({ rr, B, U, E, CA }) {
+    const tB = 4 * 1000 * rr * Math.sqrt(B / (1000 * E)) + CA;
+    const tU = 4 * 1000 * rr * Math.sqrt(U / (1.33 * 1000 * E)) + CA;
+    return { tB, tU, t: Math.max(tB, tU, 5) };
+  };
+
+  /* ---------- Toleransi dimensi ---------- */
+  C.roundTol = function (Dm) {
+    const Dft = ft(Dm);
+    return DATA.roundness.find(r => Dft < r.dMaxFt);
+  };
+  C.misalignVert = function (t, std) { // mm
+    return t > 16 ? Math.min(0.10 * t, 3) : 1.5;
+  };
+  C.projHoriz = function (tUpper) { // mm
+    return tUpper < 8 ? 1.5 : Math.min(0.20 * tUpper, 3);
+  };
+  C.weldReinf = function (t, horizontal) {
+    const r = DATA.weldReinf650.find(x => t <= x[0]);
+    return horizontal ? r[2] : r[1];
+  };
+
+  /* ---------- Settlement API 653 Annex B ---------- */
+  /* Least-squares Elev = a + p cosθ + q sinθ  ≡ a + b cos(θ + c) */
+  C.cosineFit = function (theta, y) {
+    const n = y.length;
+    const M = [[0, 0, 0], [0, 0, 0], [0, 0, 0]], v = [0, 0, 0];
+    for (let i = 0; i < n; i++) {
+      const f = [1, Math.cos(theta[i]), Math.sin(theta[i])];
+      for (let r = 0; r < 3; r++) { v[r] += f[r] * y[i]; for (let c = 0; c < 3; c++) M[r][c] += f[r] * f[c]; }
+    }
+    const sol = solve3(M, v);
+    const [a, p, q] = sol;
+    const b = Math.hypot(p, q);
+    const c = Math.atan2(-q, p); // a + b cos(θ + c) = a + b cosθ cos c − b sinθ sin c
+    const pred = theta.map(t => a + p * Math.cos(t) + q * Math.sin(t));
+    const mean = y.reduce((s, x) => s + x, 0) / n;
+    const Syy = y.reduce((s, x) => s + (x - mean) ** 2, 0);
+    const SSE = y.reduce((s, x, i) => s + (x - pred[i]) ** 2, 0);
+    const R2 = Syy > 0 ? (Syy - SSE) / Syy : 1;
+    return { a, b, c, pred, R2, Syy, SSE };
+  };
+  function solve3(A, b) {
+    const M = A.map((r, i) => [...r, b[i]]);
+    for (let i = 0; i < 3; i++) {
+      let p = i;
+      for (let r = i + 1; r < 3; r++) if (Math.abs(M[r][i]) > Math.abs(M[p][i])) p = r;
+      [M[i], M[p]] = [M[p], M[i]];
+      for (let r = 0; r < 3; r++) {
+        if (r === i) continue;
+        const f = M[r][i] / M[i][i];
+        for (let c = i; c < 4; c++) M[r][c] -= f * M[i][c];
+      }
+    }
+    return [M[0][3] / M[0][0], M[1][3] / M[1][1], M[2][3] / M[2][2]];
+  }
+
+  /* Evaluasi B.2.2.4 + B.3.2.1. elev (mm), equally spaced. step k = subset (Note). */
+  C.settlementCosine = function ({ elev, D, H, Y, E, k = 1 }) {
+    const n = elev.length;
+    const theta = elev.map((_, i) => 2 * Math.PI * i / n);
+    const fit = C.cosineFit(theta, elev);
+    const U = elev.map((e, i) => e - fit.pred[i]);
+    const S = U.map((u, i) => u - (0.5 * U[(i - k + n) % n] + 0.5 * U[(i + k) % n]));
+    const Lft = ft(Math.PI * D / n) * k;
+    const SmaxFt = (Lft * Lft * Y * 11) / (2 * E * ft(H));
+    const Smax = SmaxFt * M_PER_FT * 1000; // mm
+    const uniform = Math.min(...elev);
+    return { fit, U, S, Lft, Smax, SmaxIn: SmaxFt * 12, uniform };
+  };
+
+  /* B.3.2.2 */
+  C.settlementArc = function ({ Sarc, D, H, Y, E, roof }) {
+    const Dft = ft(D), Hft = ft(H), Sarcft = ft(Sarc);
+    const row = DATA.settleK.find(r => Dft <= r[0]);
+    if (!row) return { na: true };
+    const K = roof === 'open' ? row[1] : row[2];
+    if (K == null) return { na: true };
+    const SmaxIn = Math.min(K * Sarcft * (Dft / Hft) * (Y / E), 4.0);
+    return { K, SmaxIn, Smax: mm(SmaxIn) };
+  };
+
+  /* B.3.3 bulge/depression. R (m) → BB (mm) */
+  C.bulge = function (Rm) {
+    const BBin = 0.37 * ft(Rm);
+    return { BBin, BB: mm(BBin) };
+  };
+
+  /* B.3.4 edge settlement. R ft, D ft → in */
+  function interpCurve(pts, x) {
+    if (x <= pts[0][0]) return pts[0][1];
+    for (let i = 1; i < pts.length; i++) {
+      if (x <= pts[i][0]) {
+        const [x0, y0] = pts[i - 1], [x1, y1] = pts[i];
+        return y0 + (y1 - y0) * (x - x0) / (x1 - x0);
+      }
+    }
+    return pts[pts.length - 1][1];
+  }
+  C.edgeAllow = function (curves, Dft, Rft) {
+    const ds = Object.keys(curves).map(Number).sort((a, b) => a - b);
+    const flags = [];
+    if (Rft > 6) flags.push('R > 6 ft: di luar grafik, nilai diambil pada R = 6 ft');
+    const R = Math.min(Rft, 6);
+    if (Dft <= ds[0]) { if (Dft < ds[0]) flags.push('D < 20 ft: memakai kurva 20 ft'); return { B: interpCurve(curves[ds[0]], R), flags }; }
+    if (Dft >= ds[ds.length - 1]) return { B: interpCurve(curves[ds[ds.length - 1]], R), flags };
+    let i = ds.findIndex(d => d >= Dft);
+    const d0 = ds[i - 1], d1 = ds[i];
+    const b0 = interpCurve(curves[d0], R), b1 = interpCurve(curves[d1], R);
+    return { B: b0 + (b1 - b0) * (Dft - d0) / (d1 - d0), flags };
+  };
+  C.edgeSettlement = function ({ D, R, alphaDeg }) {
+    const Dft = ft(D), Rft = ft(R);
+    const bew = C.edgeAllow(DATA.edgeBew, Dft, Rft);
+    const be = C.edgeAllow(DATA.edgeBe, Dft, Rft);
+    const a = (alphaDeg || 0) * Math.PI / 180;
+    const Balpha = be.B - (be.B - bew.B) * Math.sin(a);
+    return { BewIn: bew.B, BeIn: be.B, BalphaIn: Balpha, flags: [...new Set([...bew.flags, ...be.flags])] };
+  };
+
+  /* ---------- Inspection interval API 653 6.3 / 6.4 ---------- */
+  C.externalInterval = function (RCAmils, Nmpy) {
+    if (!(Nmpy > 0)) return 5;
+    return Math.min(5, RCAmils / (4 * Nmpy));
+  };
+  C.utInterval = function (RCAmils, Nmpy) {
+    if (!(Nmpy > 0)) return 5;
+    return Math.min(15, RCAmils / (2 * Nmpy));
+  };
+  C.initialInternal = function ({ credits, caIn, crMpy, rpb }) {
+    let yrs = 10 + credits;
+    let caCredit = 0;
+    if (caIn > 0.150) caCredit = (caIn * 1000 - 150) / (crMpy > 0 ? crMpy : 15);
+    yrs += caCredit;
+    const cap = rpb ? 30 : 20;
+    return { yrs: Math.min(yrs, cap), raw: yrs, caCredit, cap };
+  };
+
+  /* ---------- statistik bantu ---------- */
+  C.stats = function (arr) {
+    const a = arr.filter(x => Number.isFinite(x));
+    if (!a.length) return { n: 0 };
+    const min = Math.min(...a), max = Math.max(...a);
+    const avg = a.reduce((s, x) => s + x, 0) / a.length;
+    return { n: a.length, min, max, avg };
+  };
+
+  root.TKCalc = C;
+  if (typeof module !== 'undefined') module.exports = C;
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* Toolkit Tangki — definisi modul (klasifikasi, parameter yang ditinjau, input, perhitungan).
+ * Setiap modul: { id, cat, comp, title, refs, params, fields, table, compute(v) }.
+ * compute menerima nilai field (sudah di-map) dan baris tabel, mengembalikan
+ * { summary, checks, table, chart, notes }.
+ * check.ok: true (memenuhi) | false (tidak memenuhi) | 'warn' (perlu tindak lanjut) | null (info).
+ */
+(function (root) {
+  const C = root.TKCalc, DATA = root.TKData;
+  const f = (x, d = 2) => (x == null || !Number.isFinite(x)) ? '–' : Number(x).toFixed(d);
+  const num = x => Number.isFinite(x);
+  const matOpts653 = DATA.mat653.map(m => ({ v: { Y: m[1], T: m[2] }, l: `${m[0]} (Y ${m[1].toLocaleString('en')} / T ${m[2].toLocaleString('en')} psi)` }));
+  const matOpts650 = DATA.mat650.map(m => ({ v: { Y: m[1], T: m[2], Sd: m[3], St: m[4] }, l: `${m[0]} (Sd ${m[3]} / St ${m[4]} MPa)` }));
+  const basisOpts = [
+    { v: '650', l: 'API 650 — tangki baru (konstruksi)' },
+    { v: '653', l: 'API 653 — tangki rekonstruksi' }
+  ];
+  const yesNo = [{ v: false, l: 'Tidak' }, { v: true, l: 'Ya' }];
+
+  /* ---------- KLASIFIKASI ---------- */
+  const CATS = [
+    {
+      id: 'A', title: 'Evaluasi & Perhitungan Komponen',
+      desc: 'Perhitungan tebal minimum, sisa umur, dan kelayakan operasi per komponen.',
+      groups: [
+        { id: 'SH', title: 'Shell (dinding)' },
+        { id: 'BT', title: 'Bottom & Annular' },
+        { id: 'RF', title: 'Roof (atap)' },
+        { id: 'IN', title: 'Interval Inspeksi' }
+      ]
+    },
+    {
+      id: 'B', title: 'Inspeksi Dimensional & Toleransi',
+      desc: 'Pengukuran kuantitatif di lapangan dibandingkan dengan toleransi API.',
+      groups: [
+        { id: 'DT', title: 'Geometri shell' },
+        { id: 'WD', title: 'Sambungan las' },
+        { id: 'FD', title: 'Foundation' }
+      ]
+    },
+    {
+      id: 'C', title: 'Settlement',
+      desc: 'Evaluasi penurunan tangki per API 653 Annex B dan API 650 7.3.7.',
+      groups: [{ id: 'ST', title: 'Shell, edge & bottom settlement' }]
+    }
+  ];
+
+  const M = [];
+  const add = m => M.push(m);
+
+  /* ================= A · SHELL ================= */
+  add({
+    id: 'SH-01', grp: 'SH', title: 'Tebal minimum shell per course',
+    refs: ['API 653 4.3.3.1 a)', 'API 653 4.3.3.2 a)', 'API 653 Table 4.1 / 4.2 / 4.3', 'API 653 4.3.4 (riveted)'],
+    params: ['tmin tiap course', 'Tebal aktual vs tmin', 'Laju korosi & sisa umur', 'Batas tinggi hydrotest Ht'],
+    desc: 'Tebal minimum yang dapat diterima untuk seluruh course: tmin = 2.6 (H − 1) D G / (S E), minimum 0.1 in. S diambil dari Y dan T material (0.80Y / 0.429T untuk 2 course bawah, 0.88Y / 0.472T untuk course atas).',
+    fields: [
+      { k: 'D', l: 'Diameter nominal D', u: 'm', def: 30, link: 'D' },
+      { k: 'HL', l: 'Tinggi cairan maks. (dari bottom)', u: 'm', def: 14.4, link: 'HL' },
+      { k: 'G', l: 'Specific gravity G (tertinggi)', u: '–', def: 0.9, link: 'G' },
+      { k: 'riv', l: 'Shell riveted?', type: 'sel', opts: yesNo, def: 0 },
+      { k: 'E', l: 'Joint efficiency E', type: 'sel', opts: DATA.jointEff653.concat(DATA.jointRivet.map(o => ({ v: o.v, l: 'Riveted: ' + o.l }))), def: 0 },
+      { k: 'CAn', l: 'Korosi s.d. inspeksi berikut (ditambah ke tmin)', u: 'mm', def: 0 }
+    ],
+    table: {
+      k: 'courses', l: 'Data per course (course 1 = paling bawah)', link: 'courses',
+      cols: [
+        { k: 'w', l: 'Lebar (mm)', def: 2400 },
+        { k: 'mat', l: 'Material', type: 'sel', opts: matOpts653, def: 0 },
+        { k: 'tNom', l: 't nominal (mm)', def: 12 },
+        { k: 'tAct', l: 't aktual min (mm)', def: 11 },
+        { k: 'tPrev', l: 't sebelumnya (mm)', def: '' },
+        { k: 'yrs', l: 'Selang (tahun)', def: '' }
+      ],
+      rows: [
+        { w: 2400, mat: 0, tNom: 14, tAct: 12.6, tPrev: 13.2, yrs: 10 },
+        { w: 2400, mat: 0, tNom: 12, tAct: 10.9, tPrev: 11.3, yrs: 10 },
+        { w: 2400, mat: 0, tNom: 10, tAct: 9.2, tPrev: 9.5, yrs: 10 },
+        { w: 2400, mat: 0, tNom: 8, tAct: 7.1, tPrev: 7.4, yrs: 10 },
+        { w: 2400, mat: 0, tNom: 8, tAct: 7.3, tPrev: 7.5, yrs: 10 },
+        { w: 2400, mat: 0, tNom: 8, tAct: 7.4, tPrev: 7.6, yrs: 10 }
+      ]
+    },
+    compute(v, rows) {
+      const courses = rows.map(r => ({ w: r.w, Y: r.mat.Y, T: r.mat.T, E: v.E, tAct: r.tAct, tPrev: r.tPrev, years: r.yrs }));
+      const res = C.shellCourses653({ D: v.D, HL: v.HL, G: v.G, courses, riveted: v.riv });
+      const checks = [];
+      const trows = res.rows.map(r => {
+        const need = r.tminMm + (v.CAn || 0);
+        const ok = r.aboveLiquid ? null : r.tAct >= need;
+        if (!r.aboveLiquid) checks.push({ l: `Course ${r.n}: t aktual ≥ tmin${v.CAn ? ' + CA' : ''}`, meas: f(r.tAct), lim: '≥ ' + f(need), u: 'mm', ok, ref: '4.3.3.1' });
+        return [r.n, f(r.z, 2), f(r.H, 2), r.S.toLocaleString('en'), f(r.tminMm) + (r.floored ? '*' : ''), f(r.tAct), num(r.CR) ? f(r.CR, 3) : '–', num(r.RL) ? f(r.RL, 1) : '–', f(r.testLevel, 2), { ok }];
+      });
+      const live = res.rows.filter(r => !r.aboveLiquid);
+      const rl = live.map(r => r.RL).filter(num);
+      const minRL = rl.length ? Math.min(...rl) : null;
+      checks.push({ l: 'Batas tinggi hydrotest (min. semua course) ≥ tinggi cairan maks.', meas: f(res.testLimit), lim: '≥ ' + f(v.HL), u: 'm', ok: res.testLimit >= v.HL ? true : 'warn', ref: '4.3.3.2' });
+      // interval external/UT dari course paling kritis (RCA/N terkecil)
+      let ext = 5, ut = 5;
+      live.forEach(r => { if (num(r.N) && r.N > 0) { ext = Math.min(ext, C.externalInterval(r.RCA, r.N)); ut = Math.min(ut, C.utInterval(r.RCA, r.N)); } });
+      return {
+        summary: [
+          { l: 'Sisa umur terpendek', v: minRL != null ? f(minRL, 1) : '–', u: 'tahun' },
+          { l: 'Level hydrotest maks.', v: f(res.testLimit), u: 'm' },
+          { l: 'Interval external maks.', v: f(Math.max(ext, 0), 1), u: 'tahun' },
+          { l: 'Interval UT shell maks.', v: f(Math.max(ut, 0), 1), u: 'tahun' }
+        ],
+        checks,
+        table: { head: ['Course', 'Elev. dasar (m)', 'H (m)', 'S (psi)', 'tmin (mm)', 't akt. (mm)', 'CR (mm/th)', 'Sisa umur (th)', 'Level Ht (m)', 'Status'], rows: trows },
+        chart: {
+          type: 'bars', xLabel: 'Course', yLabel: 'mm',
+          cats: res.rows.map(r => 'C' + r.n),
+          series: [{ name: 't aktual', y: res.rows.map(r => r.tAct), cls: 's1' }, { name: 'tmin', y: res.rows.map(r => r.aboveLiquid ? null : r.tminMm + (v.CAn || 0)), cls: 'lim', line: true }]
+        },
+        notes: [
+          '* tmin dibatasi minimum 0.1 in (2.54 mm).',
+          'Rumus hanya memperhitungkan beban cairan. Beban angin, gempa, vakum, temperatur > 200 °F, beban nozzle, dan settlement dievaluasi terpisah (4.3.3.5).',
+          'Metode 1-foot ini berlaku untuk D ≤ 200 ft (61 m). Di atas itu gunakan variable design point (4.3.3.4).',
+          'Interval external = min(5, RCA/4N); interval UT = min(15, RCA/2N) — 6.3.2.1 dan 6.3.3.2.'
+        ].concat(v.D > 61 ? ['⚠ D > 61 m: wajib variable design point method (4.3.3.4).'] : [])
+      };
+    }
+  });
+
+  add({
+    id: 'SH-02', grp: 'SH', title: 'Area korosi lokal (LTA)',
+    refs: ['API 653 4.3.2.1', 'API 653 4.3.3.1 b)', 'Figure 4.1'],
+    params: ['Panjang kritis L', 't2 (tebal terkecil)', 't1 (rata-rata terendah sepanjang L)', 't1 ≥ tmin, t2 ≥ 60% tmin'],
+    desc: 'L = 3.7 √(D t2), maks. 40 in. Rata-rata t1 dihitung bergeser sepanjang L dari profil pembacaan pada bidang vertikal paling terkorosi (minimal 5 titik).',
+    fields: [
+      { k: 'D', l: 'Diameter D', u: 'm', def: 30, link: 'D' },
+      { k: 'H', l: 'Tinggi cairan di atas titik terendah L', u: 'm', def: 13.2 },
+      { k: 'G', l: 'Specific gravity G', u: '–', def: 0.9, link: 'G' },
+      { k: 'mat', l: 'Material', type: 'sel', opts: matOpts653, def: 0 },
+      { k: 'low', l: 'Berada di 2 course terbawah?', type: 'sel', opts: yesNo, def: 1 },
+      { k: 'E', l: 'Joint efficiency E', type: 'sel', opts: DATA.jointEff653, def: 11 },
+      { k: 't2', l: 't2 tebal terkecil (tanpa pit)', u: 'mm', def: 7.8 },
+      { k: 'sp', l: 'Jarak antar titik pembacaan', u: 'mm', def: 50 },
+      { k: 'CAn', l: 'Korosi s.d. inspeksi berikut', u: 'mm', def: 0.5 }
+    ],
+    table: {
+      k: 'pts', l: 'Profil tebal sepanjang bidang vertikal (dari bawah ke atas)',
+      cols: [{ k: 't', l: 'Tebal (mm)', def: '' }],
+      rows: [11.2, 10.4, 9.6, 8.9, 8.2, 7.8, 8.1, 8.6, 9.3, 10.1, 10.8, 11.3].map(t => ({ t }))
+    },
+    compute(v, rows) {
+      const readings = rows.map(r => r.t).filter(num);
+      const r = C.lta653({ D: v.D, t2: v.t2, readings, spacing: v.sp });
+      const { S } = C.stress653(v.mat.Y, v.mat.T, v.low);
+      const tm = C.tmin653({ Dft: C.ft(v.D), Hft: C.ft(v.H), G: v.G, S, E: v.E, whole: false });
+      const tmin = C.mm(tm.tmin);
+      const ca = v.CAn || 0;
+      const checks = [
+        { l: 't1 (rata-rata terendah sepanjang L) ≥ tmin + CA', meas: f(r.t1), lim: '≥ ' + f(tmin + ca), u: 'mm', ok: r.t1 != null ? r.t1 >= tmin + ca : null, ref: '4.3.2.1 e) i' },
+        { l: 't2 ≥ 60% tmin + CA', meas: f(v.t2), lim: '≥ ' + f(0.6 * tmin + ca), u: 'mm', ok: v.t2 >= 0.6 * tmin + ca, ref: '4.3.2.1 e) ii' }
+      ];
+      if (readings.length < 5) checks.push({ l: 'Jumlah titik pembacaan ≥ 5', meas: readings.length, lim: '≥ 5', u: 'titik', ok: false, ref: '4.3.2.1 c)' });
+      const hi = new Set(); for (let i = r.idx; i < r.idx + r.n; i++) hi.add(i);
+      return {
+        summary: [
+          { l: 'Panjang kritis L', v: f(r.Lmm, 0), u: 'mm', s: f(r.Lin, 2) + ' in' },
+          { l: 'Titik dalam L', v: r.n, u: 'titik' },
+          { l: 't1', v: f(r.t1), u: 'mm' },
+          { l: 'tmin lokal (H dari dasar L)', v: f(tmin), u: 'mm', s: 'S = ' + S.toLocaleString('en') + ' psi' }
+        ],
+        checks,
+        chart: {
+          type: 'line', xLabel: 'Titik ke- (dari bawah)', yLabel: 'mm',
+          x: readings.map((_, i) => i + 1),
+          series: [{ name: 'Tebal', y: readings, cls: 's1', mark: hi }],
+          hlines: [{ y: tmin + ca, name: 'tmin + CA', cls: 'lim' }, { y: 0.6 * tmin + ca, name: '0.6 tmin + CA', cls: 'lim2' }]
+        },
+        notes: ['Titik yang diberi tanda adalah jendela L dengan rata-rata terendah (t1).', 'Cek juga beban tambahan per 4.3.3.5.']
+      };
+    }
+  });
+
+  add({
+    id: 'SH-03', grp: 'SH', title: 'Pitting tersebar pada shell',
+    refs: ['API 653 4.3.2.2', 'Figure 4.2'],
+    params: ['Sisa tebal di pit ≥ ½ tmin', 'Jumlah dimensi pit ≤ 2 in per 8 in vertikal'],
+    desc: 'Pit tersebar boleh diabaikan bila sisa tebal di setiap pit tidak kurang dari setengah tmin (tanpa CA) dan jumlah dimensi pit sepanjang garis vertikal tidak lebih dari 2 in dalam panjang 8 in.',
+    fields: [{ k: 'tmin', l: 'tmin course (tanpa CA), dari SH-01', u: 'mm', def: 7.6 }],
+    table: {
+      k: 'pits', l: 'Pit sepanjang satu garis vertikal',
+      cols: [{ k: 'y', l: 'Posisi vertikal (mm)', def: '' }, { k: 'd', l: 'Dimensi vertikal pit (mm)', def: '' }, { k: 'rt', l: 'Sisa tebal di pit (mm)', def: '' }],
+      rows: [{ y: 120, d: 12, rt: 5.1 }, { y: 180, d: 15, rt: 4.6 }, { y: 260, d: 10, rt: 5.4 }, { y: 410, d: 18, rt: 3.6 }]
+    },
+    compute(v, rows) {
+      const P = rows.filter(r => num(r.y) && num(r.d));
+      let worst = 0, at = null;
+      P.forEach(p => {
+        const s = P.filter(q => q.y >= p.y && q.y + q.d <= p.y + 203.2).reduce((a, q) => a + q.d, 0);
+        if (s > worst) { worst = s; at = p.y; }
+      });
+      const half = 0.5 * v.tmin;
+      const checks = rows.filter(r => num(r.rt)).map((r, i) => ({ l: `Pit @ ${f(r.y, 0)} mm: sisa tebal ≥ ½ tmin`, meas: f(r.rt), lim: '≥ ' + f(half), u: 'mm', ok: r.rt >= half, ref: '4.3.2.2 a)' }));
+      checks.push({ l: 'Jumlah dimensi pit dalam 8 in (203 mm) ≤ 2 in (50.8 mm)', meas: f(worst, 1), lim: '≤ 50.8', u: 'mm', ok: worst <= 50.8, ref: '4.3.2.2 b)' });
+      return {
+        summary: [{ l: 'Jumlah dimensi terbesar / 203 mm', v: f(worst, 1), u: 'mm', s: at != null ? 'mulai ' + f(at, 0) + ' mm' : '' }, { l: 'Batas sisa tebal', v: f(half), u: 'mm' }],
+        checks,
+        notes: ['Jika salah satu syarat tidak terpenuhi, area dievaluasi sebagai LTA (SH-02) atau diperbaiki.']
+      };
+    }
+  });
+
+  add({
+    id: 'SH-04', grp: 'SH', title: 'Desain tebal shell (1-foot method)',
+    refs: ['API 650 5.6.3.2', 'API 650 5.6.1.1', 'API 650 Table 5.2a'],
+    params: ['td (kondisi produk)', 'tt (hydrotest)', 'Tebal nominal minimum', 'Tebal terpasang vs syarat'],
+    desc: 'td = 4.9 D (H − 0.3) G / Sd + CA dan tt = 4.9 D (H − 0.3) / St (SI). Tebal syarat = maks(td, tt, tebal minimum 5.6.1.1). Tidak untuk D > 61 m.',
+    fields: [
+      { k: 'D', l: 'Diameter D', u: 'm', def: 30, link: 'D' },
+      { k: 'HL', l: 'Design liquid level H', u: 'm', def: 14.4, link: 'HL' },
+      { k: 'G', l: 'Design specific gravity G', u: '–', def: 0.9, link: 'G' },
+      { k: 'CA', l: 'Corrosion allowance', u: 'mm', def: 1.5 }
+    ],
+    table: {
+      k: 'courses', l: 'Course (1 = paling bawah)', link: 'courses',
+      cols: [
+        { k: 'w', l: 'Lebar (mm)', def: 2400 },
+        { k: 'mat', l: 'Material (Table 5.2a)', type: 'sel', opts: matOpts650, def: 3 },
+        { k: 'tNom', l: 't terpasang (mm)', def: '' }
+      ],
+      rows: [14, 12, 10, 8, 8, 8].map(t => ({ w: 2400, mat: 3, tNom: t }))
+    },
+    compute(v, rows) {
+      let z = 0;
+      const tMinTab = C.shellMinNominal650(v.D);
+      const checks = [], trows = [], ys = [], yreq = [];
+      rows.forEach((r, i) => {
+        const H = v.HL - z;
+        const { td, tt } = C.oneFoot650({ D: v.D, H, G: v.G, Sd: r.mat.Sd, St: r.mat.St, CA: v.CA });
+        let tmn = tMinTab;
+        if (i === 0 && v.D > 3.2 && v.D < 15) tmn = Math.max(tmn, 6);
+        const req = H > 0 ? Math.max(td, tt, tmn) : tmn;
+        const ok = num(r.tNom) ? r.tNom >= req - 1e-9 : null;
+        if (num(r.tNom)) checks.push({ l: `Course ${i + 1}: t terpasang ≥ t syarat`, meas: f(r.tNom), lim: '≥ ' + f(req), u: 'mm', ok, ref: '5.6.1.1' });
+        trows.push([i + 1, f(H), H > 0 ? f(td) : '–', H > 0 ? f(tt) : '–', f(tmn, 0), f(req), num(r.tNom) ? f(r.tNom) : '–', { ok }]);
+        ys.push(num(r.tNom) ? r.tNom : null); yreq.push(req);
+        z += r.w / 1000;
+      });
+      return {
+        summary: [{ l: 'Tebal nominal minimum (5.6.1.1)', v: tMinTab, u: 'mm' }, { l: 'Tinggi shell dari tabel', v: f(z), u: 'm' }],
+        checks,
+        table: { head: ['Course', 'H (m)', 'td (mm)', 'tt (mm)', 't min tabel', 't syarat (mm)', 't terpasang', 'Status'], rows: trows },
+        chart: { type: 'bars', xLabel: 'Course', yLabel: 'mm', cats: rows.map((_, i) => 'C' + (i + 1)), series: [{ name: 't terpasang', y: ys, cls: 's1' }, { name: 't syarat', y: yreq, cls: 'lim', line: true }] },
+        notes: v.D > 61 ? ['⚠ D > 61 m: 1-foot method tidak boleh dipakai (5.6.3.1), gunakan variable-design-point.'] : ['Untuk 3.2 m < D < 15 m, course terbawah minimal 6 mm (Note 4).']
+      };
+    }
+  });
+
+  add({
+    id: 'SH-05', grp: 'SH', title: 'Wind girder & stabilitas shell',
+    refs: ['API 650 5.9.6.1', 'API 650 5.9.6.2', 'API 650 5.9.6.3'],
+    params: ['Tinggi maks. shell tanpa stiffener H1', 'Tinggi transformed shell', 'Kebutuhan intermediate wind girder'],
+    desc: 'H1 = 9.47 t √((t/D)³) (1.72 / Pwd), Pwd = Pwv + 0.24 kPa, Pwv = 1.48 (V/190)². Wtr = W (t_uniform / t_actual)^2.5.',
+    fields: [
+      { k: 'D', l: 'Diameter D', u: 'm', def: 30, link: 'D' },
+      { k: 'V', l: 'Kecepatan angin desain (3-s gust)', u: 'km/h', def: 160 },
+      { k: 'Pwv', l: 'Pwv dari building code (0 = pakai V)', u: 'kPa', def: 0 },
+      { k: 'CA', l: 'Kurangi CA (cek kondisi terkorosi)', u: 'mm', def: 0 }
+    ],
+    table: {
+      k: 'courses', l: 'Course (1 = paling bawah)', link: 'courses',
+      cols: [{ k: 'w', l: 'Lebar (mm)', def: 2400 }, { k: 'tNom', l: 't (mm)', def: 8 }],
+      rows: [14, 12, 10, 8, 8, 8].map(t => ({ w: 2400, tNom: t }))
+    },
+    compute(v, rows) {
+      const cs = rows.filter(r => num(r.w) && num(r.tNom)).map(r => ({ w: r.w, t: r.tNom - (v.CA || 0) }));
+      const tU = Math.min(...cs.map(c => c.t));
+      const w = C.windH1({ t: tU, D: v.D, V: v.V, Pwv: v.Pwv });
+      const tr = C.transformed(cs, tU);
+      const Htr = tr.reduce((a, c) => a + c.Wtr, 0) / 1000;
+      const need = Htr > w.H1 ? Math.ceil(Htr / w.H1) - 1 : 0;
+      return {
+        summary: [
+          { l: 'H1 (maks. tanpa stiffener)', v: f(w.H1), u: 'm' },
+          { l: 'Tinggi transformed shell', v: f(Htr), u: 'm' },
+          { l: 'Pwd', v: f(w.Pwd, 3), u: 'kPa' },
+          { l: 'Jumlah intermediate girder', v: need, u: 'buah' }
+        ],
+        checks: [{ l: 'Transformed shell ≤ H1 (tanpa intermediate girder)', meas: f(Htr), lim: '≤ ' + f(w.H1), u: 'm', ok: Htr <= w.H1 ? true : 'warn', ref: '5.9.6.3' }],
+        table: { head: ['Course', 't (mm)', 'W (mm)', 'Wtr (mm)'], rows: tr.map((c, i) => [i + 1, f(c.t), f(c.w, 0), f(c.Wtr, 0)]) },
+        notes: ['Bila diperlukan girder, letakkan di tengah tinggi transformed shell dan tidak dalam 150 mm dari sambungan horizontal (5.9.6.5). Section modulus dicek per 5.9.6.6.']
+      };
+    }
+  });
+
+  /* ================= A · BOTTOM ================= */
+  add({
+    id: 'BT-01', grp: 'BT', title: 'Minimum remaining thickness (MRT) bottom',
+    refs: ['API 653 4.4.5.1', 'API 653 Table 4.4', 'API 653 6.4.2.2.1'],
+    params: ['RTbc / RTip', 'Laju korosi StPr & UPr', 'MRT di akhir interval', 'Interval internal maksimum'],
+    desc: 'MRT = min(RTbc, RTip) − Or (StPr + UPr). MRT harus ≥ nilai Table 4.4. StPr = 0 untuk area coated; UPr = 0 bila CP efektif.',
+    fields: [
+      { k: 'tOrig', l: 'Tebal awal plat bottom', u: 'mm', def: 8 },
+      { k: 'age', l: 'Umur tangki (untuk UPr)', u: 'tahun', def: 20 },
+      { k: 'RTbc', l: 'RTbc — sisa tebal korosi bawah (setelah repair)', u: 'mm', def: 6.2 },
+      { k: 'RTip', l: 'RTip — sisa tebal korosi dalam (setelah repair)', u: 'mm', def: 6.0 },
+      { k: 'StPr', l: 'StPr — laju korosi atas (tidak direpair)', u: 'mm/th', def: 0.08 },
+      { k: 'UPrIn', l: 'UPr manual (kosong = hitung dari umur)', u: 'mm/th', def: '' },
+      { k: 'coated', l: 'Area dilapisi coating (umur ≥ Or)?', type: 'sel', opts: yesNo, def: 0 },
+      { k: 'cp', l: 'Cathodic protection efektif?', type: 'sel', opts: yesNo, def: 0 },
+      { k: 'Or', l: 'Rencana interval Or', u: 'tahun', def: 10 },
+      { k: 'des', l: 'Desain bottom/foundation', type: 'sel', opts: DATA.bottomMin653, def: 0 },
+      { k: 'rpb', l: 'Ada release prevention barrier?', type: 'sel', opts: yesNo, def: 0 }
+    ],
+    compute(v) {
+      const StPr = v.coated ? 0 : v.StPr;
+      const UPr = v.cp ? 0 : (num(v.UPrIn) ? v.UPrIn : Math.max(0, (v.tOrig - v.RTbc) / v.age));
+      const r = C.mrt653({ RTbc: v.RTbc, RTip: v.RTip, StPr, UPr, Or: v.Or });
+      const MRTmin = C.mm(v.des);
+      const cap = v.rpb ? 30 : 20;
+      const Omax = C.maxInterval653({ base: r.base, StPr, UPr, MRTmin, cap });
+      return {
+        summary: [
+          { l: 'UPr dipakai', v: f(UPr, 3), u: 'mm/th' },
+          { l: 'StPr dipakai', v: f(StPr, 3), u: 'mm/th' },
+          { l: 'MRT pada akhir Or', v: f(r.MRT), u: 'mm' },
+          { l: 'Interval internal maks.', v: f(Omax, 1), u: 'tahun', s: 'batas ' + cap + ' th' }
+        ],
+        checks: [
+          { l: 'MRT ≥ minimum Table 4.4', meas: f(r.MRT), lim: '≥ ' + f(MRTmin), u: 'mm', ok: r.MRT >= MRTmin, ref: 'Table 4.4' },
+          { l: 'Or ≤ batas 6.4.2.2.1', meas: f(v.Or, 1), lim: '≤ ' + cap, u: 'tahun', ok: v.Or <= cap, ref: '6.4.2.2.1' }
+        ],
+        notes: ['Untuk area hasil scan MFL tanpa CP efektif, tebal untuk UPr adalah yang lebih kecil dari threshold MFL atau tebal minimum area korosi yang tidak direpair (Note 1).', 'Perbaikan non-las (coating, caulking) tidak boleh menaikkan RTip (4.4.5.6).']
+      };
+    }
+  });
+
+  add({
+    id: 'BT-02', grp: 'BT', title: 'Bottom critical zone',
+    refs: ['API 653 4.4.5.4', 'API 653 9.10.1.2'],
+    params: ['Tebal minimum di critical zone', 'Tebal terukur di critical zone'],
+    desc: 'Tanpa stress analysis, tebal minimum di critical zone = yang lebih kecil dari ½ tebal awal bottom (tanpa CA awal) atau 50% tmin course 1, tetapi tidak kurang dari 0.1 in.',
+    fields: [
+      { k: 'tOrig', l: 'Tebal awal plat bottom/annular', u: 'mm', def: 8 },
+      { k: 'CA0', l: 'Corrosion allowance awal', u: 'mm', def: 1.5 },
+      { k: 'tmin1', l: 'tmin course 1 (dari SH-01)', u: 'mm', def: 11.4 },
+      { k: 't', l: 'Tebal terukur terkecil di critical zone', u: 'mm', def: 4.1 }
+    ],
+    compute(v) {
+      const lim = Math.max(Math.min(0.5 * (v.tOrig - v.CA0), 0.5 * v.tmin1), 2.54);
+      return {
+        summary: [{ l: 'Tebal minimum critical zone', v: f(lim), u: 'mm' }],
+        checks: [{ l: 'Tebal critical zone ≥ batas', meas: f(v.t), lim: '≥ ' + f(lim), u: 'mm', ok: v.t >= lim, ref: '4.4.5.4' }],
+        notes: ['Critical zone: area bottom/annular di dalam shell sejauh 3 in dari sisi dalam shell (9.10.1.2).']
+      };
+    }
+  });
+
+  add({
+    id: 'BT-03', grp: 'BT', title: 'Annular plate in-service (SG < 1)',
+    refs: ['API 653 4.4.6.2', 'API 653 Table 4.5'],
+    params: ['Tegangan course 1', 'Tebal annular minimum', 'Tebal annular terukur'],
+    desc: 'Tegangan course 1 = 2.34 D (H − 1) / t (psi; D, H dalam ft, t dalam in). Tebal minimum dari Table 4.5 ditambah CA. Interpolasi diizinkan.',
+    fields: [
+      { k: 'D', l: 'Diameter D', u: 'm', def: 30, link: 'D' },
+      { k: 'HL', l: 'Tinggi cairan maks.', u: 'm', def: 14.4, link: 'HL' },
+      { k: 'G', l: 'Specific gravity', u: '–', def: 0.9, link: 'G' },
+      { k: 't1', l: 'Tebal course 1 as-constructed', u: 'mm', def: 14 },
+      { k: 'CA', l: 'CA s.d. inspeksi berikut', u: 'mm', def: 0.5 },
+      { k: 'ta', l: 'Tebal annular terukur (min.)', u: 'mm', def: 5.2 }
+    ],
+    compute(v) {
+      if (v.G >= 1) return { summary: [], checks: [{ l: 'G ≥ 1.0: gunakan API 650 Table 5.1a/5.1b (modul BT-04)', ok: null, ref: '4.4.6.3' }], notes: [] };
+      const t1 = C.inch(v.t1);
+      const s = 2.34 * C.ft(v.D) * (C.ft(v.HL) - 1) / t1;
+      const r = C.annular653({ tShell: t1, stress: s });
+      if (r.outOfTable) return { summary: [{ l: 'Tegangan course 1', v: Math.round(s).toLocaleString('en'), u: 'psi' }], checks: [{ l: 'Tegangan ≥ 32,400 psi: di luar Table 4.5, perlu stress analysis', ok: 'warn', ref: 'Table 4.5' }], notes: [] };
+      const reqStep = C.mm(r.step) + v.CA, reqInt = C.mm(r.interp) + v.CA;
+      return {
+        summary: [
+          { l: 'Tegangan course 1', v: Math.round(s).toLocaleString('en'), u: 'psi' },
+          { l: 'Tebal min. (tabel langsung)', v: f(reqStep), u: 'mm', s: r.step + ' in + CA' },
+          { l: 'Tebal min. (interpolasi)', v: f(reqInt), u: 'mm' }
+        ],
+        checks: [
+          { l: 'Tebal annular ≥ Table 4.5 + CA (interpolasi)', meas: f(v.ta), lim: '≥ ' + f(reqInt), u: 'mm', ok: v.ta >= reqInt, ref: '4.4.6.2' },
+          { l: 'Tebal annular ≥ Table 4.5 + CA (tanpa interpolasi, konservatif)', meas: f(v.ta), lim: '≥ ' + f(reqStep), u: 'mm', ok: v.ta >= reqStep ? true : 'warn', ref: 'Table 4.5' }
+        ],
+        notes: ['Nilai tabel mengasumsikan dukungan foundation seragam di seluruh lebar annular.']
+      };
+    }
+  });
+
+  add({
+    id: 'BT-04', grp: 'BT', title: 'Annular plate desain (API 650)',
+    refs: ['API 650 5.5.2', 'API 650 5.5.3', 'API 650 Table 5.1a'],
+    params: ['Tegangan produk & hydrotest course 1', 'Tebal annular tb', 'Lebar radial minimum L'],
+    desc: 'Tegangan produk = ((td − CA)/t terkorosi) Sd; hydrotest = (tt/t nominal) St. tb dari Table 5.1a (ambil yang lebih besar, produk + CA). L = 2 tb √(Fy / (2 γ G H)) ≥ 600 mm.',
+    fields: [
+      { k: 'D', l: 'Diameter D', u: 'm', def: 30, link: 'D' },
+      { k: 'HL', l: 'Design liquid level H', u: 'm', def: 14.4, link: 'HL' },
+      { k: 'G', l: 'Specific gravity', u: '–', def: 0.9, link: 'G' },
+      { k: 'mat', l: 'Material course 1', type: 'sel', opts: matOpts650, def: 3 },
+      { k: 't1', l: 'Tebal nominal course 1', u: 'mm', def: 14 },
+      { k: 'CA', l: 'Corrosion allowance', u: 'mm', def: 1.5 },
+      { k: 'Fy', l: 'Fy plat annular', u: 'MPa', def: 250 },
+      { k: 'tb', l: 'Tebal annular terpasang', u: 'mm', def: 8 },
+      { k: 'wid', l: 'Lebar radial terpasang (dalam shell)', u: 'mm', def: 650 }
+    ],
+    compute(v) {
+      const { td, tt } = C.oneFoot650({ D: v.D, H: v.HL, G: v.G, Sd: v.mat.Sd, St: v.mat.St, CA: v.CA });
+      const sP = (td - v.CA) / (v.t1 - v.CA) * v.mat.Sd;
+      const sT = tt / v.t1 * v.mat.St;
+      const lp = C.annular650Lookup(v.t1 - v.CA, sP);
+      const lt = C.annular650Lookup(v.t1, sT);
+      const checks = [];
+      let req = null;
+      if (!lp || !lt) checks.push({ l: 'Di luar Table 5.1a (t > 45 mm atau tegangan > 250 MPa): perlu analisis elastis', ok: 'warn', ref: '5.5.3' });
+      else {
+        req = Math.max(lp.tb + v.CA, lt.tb);
+        checks.push({ l: 'tb terpasang ≥ tb syarat', meas: f(v.tb), lim: '≥ ' + f(req), u: 'mm', ok: v.tb >= req, ref: 'Table 5.1a' });
+      }
+      const Gc = Math.min(v.G, 1);
+      const L = Math.max(2 * v.tb * Math.sqrt(v.Fy / (2 * (9.81 / 1000) * Gc * v.HL)), 600);
+      checks.push({ l: 'Lebar radial ≥ L', meas: f(v.wid, 0), lim: '≥ ' + f(L, 0), u: 'mm', ok: v.wid >= L, ref: '5.5.2' });
+      if (v.HL * v.G > 23) checks.push({ l: 'H × G > 23 m: Table 5.1a tidak berlaku', ok: 'warn', ref: '5.5.3' });
+      return {
+        summary: [
+          { l: 'Tegangan produk course 1', v: f(sP, 0), u: 'MPa' },
+          { l: 'Tegangan hydrotest course 1', v: f(sT, 0), u: 'MPa' },
+          { l: 'tb syarat', v: req != null ? f(req, 1) : '–', u: 'mm' },
+          { l: 'L minimum', v: f(L, 0), u: 'mm' }
+        ],
+        checks,
+        notes: ['Annular butt-welded wajib bila course 1 memakai material Group IV–VI (5.5.1). Plat juga harus menonjol ≥ 50 mm di luar shell (5.4.2).']
+      };
+    }
+  });
+
+  add({
+    id: 'BT-05', grp: 'BT', title: 'Proyeksi bottom di luar shell',
+    refs: ['API 653 4.4.5.7', 'API 650 5.4.2'],
+    params: ['Proyeksi dari permukaan luar shell', 'Proyeksi dari toe las shell-to-bottom', 'Tebal proyeksi di toe las'],
+    desc: 'API 653: proyeksi di luar toe las luar ≥ 3/8 in (9.5 mm) dan tebal di toe las ≥ 0.1 in (2.54 mm). API 650 (baru): proyeksi dari permukaan luar shell ≥ 50 mm.',
+    fields: [{ k: 'basis', l: 'Basis', type: 'sel', opts: [{ v: '653', l: 'API 653 — in-service' }, { v: '650', l: 'API 650 — konstruksi baru' }], def: 0 }],
+    table: {
+      k: 'loc', l: 'Titik pengukuran',
+      cols: [{ k: 'loc', l: 'Lokasi', type: 'text', def: '' }, { k: 'ps', l: 'Proyeksi dari luar shell (mm)', def: '' }, { k: 'pt', l: 'Proyeksi dari toe las (mm)', def: '' }, { k: 'tp', l: 'Tebal di toe (mm)', def: '' }],
+      rows: [{ loc: '0°', ps: 55, pt: 40, tp: 6.1 }, { loc: '90°', ps: 52, pt: 38, tp: 5.2 }, { loc: '180°', ps: 48, pt: 8, tp: 2.3 }, { loc: '270°', ps: 60, pt: 45, tp: 6.4 }]
+    },
+    compute(v, rows) {
+      const checks = [];
+      rows.forEach(r => {
+        if (v.basis === '650') {
+          if (num(r.ps)) checks.push({ l: `${r.loc}: proyeksi dari luar shell ≥ 50 mm`, meas: f(r.ps, 1), lim: '≥ 50', u: 'mm', ok: r.ps >= 50, ref: '650 5.4.2' });
+        } else {
+          if (num(r.pt)) checks.push({ l: `${r.loc}: proyeksi dari toe las ≥ 3/8 in`, meas: f(r.pt, 1), lim: '≥ 9.53', u: 'mm', ok: r.pt >= 9.525, ref: '653 4.4.5.7' });
+          if (num(r.tp)) checks.push({ l: `${r.loc}: tebal di toe las ≥ 0.1 in`, meas: f(r.tp), lim: '≥ 2.54', u: 'mm', ok: r.tp >= 2.54, ref: '653 4.4.5.7' });
+        }
+      });
+      return { summary: [], checks, notes: [] };
+    }
+  });
+
+  /* ================= A · ROOF ================= */
+  add({
+    id: 'RF-01', grp: 'RF', title: 'Roof plate in-service',
+    refs: ['API 653 4.2.1.2', 'API 650 5.10.2.2'],
+    params: ['Tebal rata-rata per 100 in²', 'Lubang tembus', 'Laju korosi & sisa umur'],
+    desc: 'Roof plate dengan tebal rata-rata < 0.09 in (2.29 mm) pada area 100 in² (≈ 254 × 254 mm) atau berlubang tembus harus diperbaiki atau diganti. Plat baru minimal 5 mm nominal (API 650).',
+    table: {
+      k: 'areas', l: 'Area pengukuran (rata-rata per 100 in²)',
+      cols: [{ k: 'loc', l: 'Lokasi', type: 'text', def: '' }, { k: 't', l: 't rata-rata (mm)', def: '' }, { k: 'hole', l: 'Lubang tembus', type: 'sel', opts: yesNo, def: 0 }, { k: 'tPrev', l: 't sebelumnya (mm)', def: '' }, { k: 'yrs', l: 'Selang (th)', def: '' }],
+      rows: [{ loc: 'Ring luar 0°', t: 4.2, hole: 0, tPrev: 4.6, yrs: 10 }, { loc: 'Ring luar 180°', t: 3.1, hole: 0, tPrev: 3.8, yrs: 10 }, { loc: 'Tengah', t: 4.7, hole: 0, tPrev: 4.9, yrs: 10 }, { loc: 'Dekat vent', t: 2.0, hole: 1, tPrev: '', yrs: '' }]
+    },
+    compute(v, rows) {
+      const lim = 0.09 * 25.4;
+      const checks = [], trows = [];
+      rows.forEach(r => {
+        if (!num(r.t)) return;
+        const ok = r.t >= lim && !r.hole;
+        checks.push({ l: `${r.loc}: t rata-rata ≥ 0.09 in & tanpa lubang`, meas: f(r.t) + (r.hole ? ' (lubang)' : ''), lim: '≥ ' + f(lim), u: 'mm', ok, ref: '653 4.2.1.2' });
+        const CR = num(r.tPrev) && num(r.yrs) && r.yrs > 0 ? (r.tPrev - r.t) / r.yrs : null;
+        const RL = CR > 0 ? (r.t - lim) / CR : null;
+        trows.push([r.loc, f(r.t), num(CR) ? f(CR, 3) : '–', num(RL) ? f(Math.max(RL, 0), 1) : '–', { ok }]);
+      });
+      return { summary: [{ l: 'Batas tebal', v: f(lim), u: 'mm', s: '0.09 in' }], checks, table: { head: ['Lokasi', 't (mm)', 'CR (mm/th)', 'Sisa umur (th)', 'Status'], rows: trows }, notes: ['Periksa juga rafter, girder, kolom (out-of-plumb, korosi) per 4.2.2.1 dan sambungan frangible per 4.2.2.2.'] };
+    }
+  });
+
+  add({
+    id: 'RF-02', grp: 'RF', title: 'Self-supporting cone roof',
+    refs: ['API 650 5.10.5.1'],
+    params: ['Sudut cone θ (9.5°–37°)', 'Tebal nominal minimum', 'Tebal terkorosi ≤ 13 mm'],
+    desc: 't = maks[ (2000 D / sin θ) √(B / 1000E) + CA ; (2000 D / sin θ) √(U / 1.33·1000E) + CA ; 5 mm ].',
+    fields: [
+      { k: 'D', l: 'Diameter D', u: 'm', def: 15, link: 'D' },
+      { k: 'th', l: 'Sudut cone θ terhadap horizontal', u: '°', def: 9.5 },
+      { k: 'B', l: 'B — kombinasi beban balanced snow', u: 'kPa', def: 2.2 },
+      { k: 'U', l: 'U — kombinasi beban unbalanced snow', u: 'kPa', def: 2.2 },
+      { k: 'E', l: 'Modulus elastisitas E (pada T maks.)', u: 'MPa', def: 199000 },
+      { k: 'CA', l: 'Corrosion allowance', u: 'mm', def: 1 },
+      { k: 't', l: 'Tebal terpasang / terukur', u: 'mm', def: 8 }
+    ],
+    compute(v) {
+      const r = C.coneRoof650({ D: v.D, thetaDeg: v.th, B: v.B, U: v.U, E: v.E, CA: v.CA });
+      return {
+        summary: [{ l: 't dari B', v: f(r.tB), u: 'mm' }, { l: 't dari U', v: f(r.tU), u: 'mm' }, { l: 't syarat', v: f(r.t), u: 'mm' }],
+        checks: [
+          { l: 'Sudut 9.5° ≤ θ ≤ 37°', meas: f(v.th, 1), lim: '9.5 – 37', u: '°', ok: v.th >= 9.5 && v.th <= 37, ref: '5.10.5.1' },
+          { l: 'Tebal ≥ t syarat', meas: f(v.t), lim: '≥ ' + f(r.t), u: 'mm', ok: v.t >= r.t, ref: '5.10.5.1' },
+          { l: 'Tebal terkorosi ≤ 13 mm', meas: f(r.t - v.CA), lim: '≤ 13', u: 'mm', ok: r.t - v.CA <= 13 ? true : 'warn', ref: '5.10.5.1' }
+        ],
+        notes: ['B dan U adalah yang lebih besar dari kombinasi beban 5.2.2 (e)(1) dan (e)(2).']
+      };
+    }
+  });
+
+  add({
+    id: 'RF-03', grp: 'RF', title: 'Self-supporting dome / umbrella roof',
+    refs: ['API 650 5.10.6.1'],
+    params: ['Radius dome 0.8D – 1.2D', 'Tebal nominal minimum', 'Tebal terkorosi ≤ 13 mm'],
+    desc: 't = maks[ 4000 rr √(B / 1000E) + CA ; 4000 rr √(U / 1.33·1000E) + CA ; 5 mm ].',
+    fields: [
+      { k: 'D', l: 'Diameter D', u: 'm', def: 15, link: 'D' },
+      { k: 'rr', l: 'Radius roof rr', u: 'm', def: 30 },
+      { k: 'B', l: 'B — balanced snow', u: 'kPa', def: 2.2 },
+      { k: 'U', l: 'U — unbalanced snow', u: 'kPa', def: 2.2 },
+      { k: 'E', l: 'Modulus elastisitas E', u: 'MPa', def: 199000 },
+      { k: 'CA', l: 'Corrosion allowance', u: 'mm', def: 1 },
+      { k: 't', l: 'Tebal terpasang / terukur', u: 'mm', def: 14 }
+    ],
+    compute(v) {
+      const r = C.domeRoof650({ rr: v.rr, B: v.B, U: v.U, E: v.E, CA: v.CA });
+      return {
+        summary: [{ l: 't dari B', v: f(r.tB), u: 'mm' }, { l: 't dari U', v: f(r.tU), u: 'mm' }, { l: 't syarat', v: f(r.t), u: 'mm' }],
+        checks: [
+          { l: '0.8D ≤ rr ≤ 1.2D', meas: f(v.rr), lim: f(0.8 * v.D) + ' – ' + f(1.2 * v.D), u: 'm', ok: v.rr >= 0.8 * v.D && v.rr <= 1.2 * v.D, ref: '5.10.6.1' },
+          { l: 'Tebal ≥ t syarat', meas: f(v.t), lim: '≥ ' + f(r.t), u: 'mm', ok: v.t >= r.t, ref: '5.10.6.1' },
+          { l: 'Tebal terkorosi ≤ 13 mm', meas: f(r.t - v.CA), lim: '≤ 13', u: 'mm', ok: r.t - v.CA <= 13 ? true : 'warn', ref: '5.10.6.1' }
+        ],
+        notes: []
+      };
+    }
+  });
+
+  /* ================= A · INTERVAL ================= */
+  add({
+    id: 'IN-01', grp: 'IN', title: 'Interval inspeksi external & UT',
+    refs: ['API 653 6.3.1.2', 'API 653 6.3.2.1', 'API 653 6.3.3.2'],
+    params: ['RCA (mils)', 'Laju korosi N (mpy)', 'Interval external', 'Interval UT shell'],
+    desc: 'External: min(5 th, RCA/4N). UT: CR tidak diketahui → 5 th; diketahui → min(RCA/2N, 15 th). Routine in-service (visual dari tanah) maks. 1 bulan.',
+    fields: [
+      { k: 'tAct', l: 'Tebal shell terukur (course kritis)', u: 'mm', def: 7.1 },
+      { k: 'tmin', l: 'tmin course tersebut', u: 'mm', def: 6.2 },
+      { k: 'CR', l: 'Laju korosi (0 = tidak diketahui)', u: 'mm/th', def: 0.03 }
+    ],
+    compute(v) {
+      const RCA = C.inch(v.tAct - v.tmin) * 1000, N = C.inch(v.CR) * 1000;
+      const ext = C.externalInterval(RCA, N), ut = C.utInterval(RCA, N);
+      return {
+        summary: [{ l: 'RCA', v: f(RCA, 1), u: 'mils' }, { l: 'N', v: f(N, 2), u: 'mpy' }, { l: 'Interval external', v: f(Math.max(ext, 0), 1), u: 'tahun' }, { l: 'Interval UT', v: f(Math.max(ut, 0), 1), u: 'tahun' }],
+        checks: [{ l: 'Tebal terukur ≥ tmin', meas: f(v.tAct), lim: '≥ ' + f(v.tmin), u: 'mm', ok: v.tAct >= v.tmin, ref: '4.3.3' }],
+        notes: ['Inspeksi internal shell dapat menggantikan program UT eksternal bila intervalnya ≤ interval 6.3.3.2 b).']
+      };
+    }
+  });
+
+  add({
+    id: 'IN-02', grp: 'IN', title: 'Interval inspeksi internal awal',
+    refs: ['API 653 6.4.2.1.1', 'API 653 Table 6.1'],
+    params: ['Kredit safeguard', 'Kredit CA bottom > 0.150 in', 'Interval awal maks. (20/30 th)'],
+    desc: 'Interval awal 10 tahun ditambah kredit kumulatif Table 6.1. Maksimum 20 tahun tanpa RPB, 30 tahun dengan RPB.',
+    fields: DATA.safeguards.map(s => ({ k: s.k, l: s.l + ' (+' + s.yrs + ' th)', type: 'sel', opts: yesNo, def: 0 })).concat([
+      { k: 'CA', l: 'Corrosion allowance bottom', u: 'mm', def: 1.5 },
+      { k: 'CR', l: 'Laju korosi bottom (0 = pakai 15 mpy)', u: 'mpy', def: 0 },
+      { k: 'yr', l: 'Tahun mulai operasi', u: '', def: 2018, link: 'year' }
+    ]),
+    compute(v) {
+      const credits = DATA.safeguards.reduce((a, s) => a + (v[s.k] ? s.yrs : 0), 0);
+      const r = C.initialInternal({ credits, caIn: C.inch(v.CA), crMpy: v.CR, rpb: v.rpb });
+      return {
+        summary: [{ l: 'Kredit safeguard', v: credits, u: 'tahun' }, { l: 'Kredit CA', v: f(r.caCredit, 1), u: 'tahun' }, { l: 'Interval awal', v: f(r.yrs, 1), u: 'tahun', s: 'batas ' + r.cap + ' th' }, { l: 'Inspeksi internal pertama', v: num(v.yr) ? Math.floor(v.yr + r.yrs) : '–', u: '' }],
+        checks: [{ l: 'Interval tidak melebihi batas', meas: f(r.raw, 1), lim: '≤ ' + r.cap, u: 'tahun', ok: r.raw <= r.cap ? true : null, ref: '6.4.2.1.1' }],
+        notes: ['Alternatif: interval berbasis RBI per 6.4.2.1.2 / 6.4.2.2.2.']
+      };
+    }
+  });
+
+  /* ================= B · TOLERANSI ================= */
+  const devModule = (o) => add({
+    id: o.id, grp: o.grp, title: o.title, refs: o.refs, params: o.params, desc: o.desc,
+    fields: [{ k: 'basis', l: 'Basis toleransi', type: 'sel', opts: basisOpts, def: 0 }],
+    table: { k: 'pts', l: o.tl, cols: [{ k: 'id', l: 'Sambungan / lokasi', type: 'text', def: '' }, { k: 'd', l: 'Deviasi (mm)', def: '' }], rows: o.rows },
+    compute(v, rows) {
+      const lim = o.lim(v.basis);
+      const pts = rows.filter(r => num(r.d));
+      const checks = pts.map(r => ({ l: `${r.id}: |deviasi| ≤ batas`, meas: f(r.d, 1), lim: '≤ ' + f(lim.mm, 1), u: 'mm', ok: Math.abs(r.d) <= lim.mm + 1e-9, ref: lim.ref }));
+      const st = C.stats(pts.map(r => Math.abs(r.d)));
+      return {
+        summary: [{ l: 'Batas', v: f(lim.mm, 1), u: 'mm', s: lim.txt }, { l: 'Deviasi maks.', v: f(st.max, 1), u: 'mm' }, { l: 'Titik melebihi', v: checks.filter(c => c.ok === false).length + ' / ' + checks.length, u: '' }],
+        checks,
+        chart: { type: 'bars', xLabel: 'Lokasi', yLabel: 'mm', cats: pts.map(r => r.id), series: [{ name: '|deviasi|', y: pts.map(r => Math.abs(r.d)), cls: 's1' }], hlines: [{ y: lim.mm, name: 'Batas', cls: 'lim' }] },
+        notes: [o.note]
+      };
+    }
+  });
+
+  add({
+    id: 'DT-01', grp: 'DT', title: 'Plumbness (kevertikalan)',
+    refs: ['API 650 7.5.2', 'API 653 10.5.2'],
+    params: ['Out-of-plumbness puncak vs dasar shell', 'Batas H/200 (API 650) atau H/100 maks. 5 in (API 653)'],
+    desc: 'Simpangan horizontal puncak shell terhadap dasar shell. API 650: ≤ 1/200 tinggi total. API 653 (rekonstruksi): ≤ 1/100 tinggi, maks. 5 in (127 mm). Batas yang sama berlaku untuk kolom roof.',
+    fields: [
+      { k: 'basis', l: 'Basis toleransi', type: 'sel', opts: basisOpts, def: 0 },
+      { k: 'obj', l: 'Objek', type: 'sel', opts: [{ v: 'shell', l: 'Shell' }, { v: 'col', l: 'Kolom roof / guide pole' }], def: 0 },
+      { k: 'H', l: 'Tinggi total shell / kolom', u: 'm', def: 14.4, link: 'Hs' }
+    ],
+    table: {
+      k: 'pts', l: 'Stasiun pengukuran keliling',
+      cols: [{ k: 'id', l: 'Stasiun', type: 'text', def: '' }, { k: 'd', l: 'Simpangan puncak (mm)', def: '' }],
+      rows: [['0°', 22], ['45°', 31], ['90°', 18], ['135°', -12], ['180°', -40], ['225°', -78], ['270°', -25], ['315°', 9]].map(([id, d]) => ({ id, d }))
+    },
+    compute(v, rows) {
+      const Hmm = v.H * 1000;
+      const lim = v.basis === '650' ? Hmm / 200 : Math.min(Hmm / 100, 127);
+      const pts = rows.filter(r => num(r.d));
+      const checks = pts.map(r => ({ l: `${r.id}: |simpangan| ≤ batas`, meas: f(r.d, 1), lim: '≤ ' + f(lim, 1), u: 'mm', ok: Math.abs(r.d) <= lim, ref: v.basis === '650' ? '650 7.5.2' : '653 10.5.2.1' }));
+      const st = C.stats(pts.map(r => Math.abs(r.d)));
+      return {
+        summary: [{ l: 'Batas out-of-plumb', v: f(lim, 1), u: 'mm', s: v.basis === '650' ? 'H/200' : 'H/100, maks. 127 mm' }, { l: 'Simpangan maks.', v: f(st.max, 1), u: 'mm' }],
+        checks,
+        chart: { type: 'bars', xLabel: 'Stasiun', yLabel: 'mm', cats: pts.map(r => r.id), series: [{ name: 'Simpangan', y: pts.map(r => r.d), cls: 's1' }], hlines: [{ y: lim, name: '+batas', cls: 'lim' }, { y: -lim, name: '−batas', cls: 'lim' }] },
+        notes: ['Out-of-plumbness per course juga tidak boleh melebihi toleransi flatness/waviness ASTM A6/A20/A480.', 'Untuk tangki IFR berlaku juga Annex H (H.4.1.1), ambil yang lebih ketat.', 'Ukur sebelum hydrotest (7.5.1 / 10.5.1.2).']
+      };
+    }
+  });
+
+  add({
+    id: 'DT-02', grp: 'DT', title: 'Roundness (kebundaran)',
+    refs: ['API 650 7.5.3', 'API 653 10.5.3 & Table 10.2'],
+    params: ['Radius terukur vs radius nominal', 'Toleransi radius berdasarkan D', 'Elevasi pengukuran (0.3 m / lebih tinggi)'],
+    desc: 'Radius diukur 0.3 m (1 ft) di atas las bottom-to-shell. Toleransi: D < 12 m ±13 mm; 12–45 m ±19 mm; 45–75 m ±25 mm; ≥ 75 m ±32 mm. API 653: di atas 1 ft boleh 3× toleransi.',
+    fields: [
+      { k: 'basis', l: 'Basis toleransi', type: 'sel', opts: basisOpts, def: 0 },
+      { k: 'D', l: 'Diameter nominal D', u: 'm', def: 30, link: 'D' },
+      { k: 'Rn', l: 'Radius nominal (0 = D/2)', u: 'mm', def: 0 },
+      { k: 'el', l: 'Elevasi pengukuran di atas las bottom', u: 'm', def: 0.3 }
+    ],
+    table: {
+      k: 'pts', l: 'Radius terukur per stasiun',
+      cols: [{ k: 'id', l: 'Stasiun', type: 'text', def: '' }, { k: 'r', l: 'Radius (mm)', def: '' }],
+      rows: [['0°', 15008], ['30°', 15012], ['60°', 14995], ['90°', 14987], ['120°', 14980], ['150°', 14992], ['180°', 15004], ['210°', 15021], ['240°', 15011], ['270°', 14998], ['300°', 15003], ['330°', 15009]].map(([id, r]) => ({ id, r }))
+    },
+    compute(v, rows) {
+      const Rn = v.Rn > 0 ? v.Rn : v.D * 500;
+      const t = C.roundTol(v.D);
+      let tol = v.basis === '650' ? t.mm : t.inch * 25.4;
+      const high = v.el > 0.3048 + 1e-6;
+      if (high && v.basis === '653') tol *= 3;
+      const pts = rows.filter(r => num(r.r));
+      const dev = pts.map(r => r.r - Rn);
+      const checks = pts.map((r, i) => ({ l: `${r.id}: |R − Rnom| ≤ toleransi`, meas: f(dev[i], 1), lim: '± ' + f(tol, 1), u: 'mm', ok: Math.abs(dev[i]) <= tol + 1e-9, ref: v.basis === '650' ? '650 7.5.3' : '653 Table 10.2' }));
+      const notes = [];
+      if (high && v.basis === '650') notes.push('⚠ API 650 hanya menetapkan toleransi pada 0.3 m di atas las bottom; nilai ini ditampilkan sebagai acuan.');
+      const st = C.stats(pts.map(r => r.r));
+      return {
+        summary: [{ l: 'Radius nominal', v: f(Rn, 0), u: 'mm' }, { l: 'Toleransi', v: '± ' + f(tol, 1), u: 'mm', s: high && v.basis === '653' ? '3× Table 10.2' : '' }, { l: 'Ovality (Rmaks − Rmin)', v: f(st.max - st.min, 1), u: 'mm' }],
+        checks,
+        chart: { type: 'bars', xLabel: 'Stasiun', yLabel: 'mm', cats: pts.map(r => r.id), series: [{ name: 'R − Rnom', y: dev, cls: 's1' }], hlines: [{ y: tol, name: '+tol', cls: 'lim' }, { y: -tol, name: '−tol', cls: 'lim' }] },
+        notes: notes.concat(['Ovality akibat settlement dapat mengganggu floating roof (653 B.3.2.3).'])
+      };
+    }
+  });
+
+  devModule({
+    id: 'DT-03', grp: 'DT', title: 'Peaking (sambungan vertikal)',
+    refs: ['API 650 7.5.4 a)', 'API 653 10.5.4'],
+    params: ['Deviasi di las vertikal', 'Sweep board horizontal 900 mm (36 in)'],
+    desc: 'Diukur dengan sweep board horizontal 900 mm yang dibuat sesuai radius tangki. Batas 13 mm (API 650) atau 1/2 in = 12.7 mm (API 653).',
+    tl: 'Pembacaan peaking per sambungan vertikal',
+    rows: [['V1-2', 6], ['V1-5', 9], ['V2-3', 14], ['V2-8', 4], ['V3-1', 11]].map(([id, d]) => ({ id, d })),
+    lim: b => b === '650' ? { mm: 13, txt: '13 mm', ref: '650 7.5.4 a)' } : { mm: 12.7, txt: '1/2 in', ref: '653 10.5.4' },
+    note: 'Sweep board dibuat ke radius nominal (650) / radius luar sebenarnya (653).'
+  });
+
+  devModule({
+    id: 'DT-04', grp: 'DT', title: 'Banding (sambungan horizontal)',
+    refs: ['API 650 7.5.4 b)', 'API 653 10.5.5'],
+    params: ['Deviasi di las horizontal', 'Sweep board vertikal lurus 900 mm (36 in)'],
+    desc: 'Diukur dengan straight edge vertikal 900 mm. Batas 13 mm (API 650) atau 1 in = 25.4 mm (API 653).',
+    tl: 'Pembacaan banding per sambungan horizontal',
+    rows: [['H1 @0°', 8], ['H1 @90°', 12], ['H2 @0°', 15], ['H2 @180°', 6], ['H3 @270°', 10]].map(([id, d]) => ({ id, d })),
+    lim: b => b === '650' ? { mm: 13, txt: '13 mm', ref: '650 7.5.4 b)' } : { mm: 25.4, txt: '1 in', ref: '653 10.5.5' },
+    note: 'Flat spot pada bidang vertikal dibatasi toleransi flatness & waviness plat (650 7.5.4 c).'
+  });
+
+  add({
+    id: 'WD-01', grp: 'WD', title: 'Misalignment sambungan vertikal',
+    refs: ['API 650 7.2.3.1', 'API 653 10.4.4.1'],
+    params: ['Tebal plat', 'Misalignment terukur', 'Batas 10% t (maks. 3 mm) atau 1.5 mm'],
+    desc: 'Plat > 16 mm: misalignment ≤ 10% t, maks. 3 mm (1/8 in). Plat ≤ 16 mm: ≤ 1.5 mm (1/16 in).',
+    fields: [{ k: 'basis', l: 'Basis', type: 'sel', opts: basisOpts, def: 0 }],
+    table: {
+      k: 'pts', l: 'Sambungan vertikal',
+      cols: [{ k: 'id', l: 'Sambungan', type: 'text', def: '' }, { k: 't', l: 't plat (mm)', def: '' }, { k: 'm', l: 'Misalignment (mm)', def: '' }],
+      rows: [{ id: 'V1-1', t: 20, m: 1.8 }, { id: 'V1-2', t: 20, m: 2.4 }, { id: 'V3-1', t: 10, m: 1.2 }, { id: 'V5-4', t: 8, m: 1.9 }]
+    },
+    compute(v, rows) {
+      const checks = rows.filter(r => num(r.t) && num(r.m)).map(r => {
+        const lim = v.basis === '650' ? C.misalignVert(r.t) : (r.t > 15.875 ? Math.min(0.1 * r.t, 3.175) : 1.5875);
+        return { l: `${r.id} (t ${f(r.t, 1)}): misalignment ≤ batas`, meas: f(r.m, 1), lim: '≤ ' + f(lim, 2), u: 'mm', ok: r.m <= lim + 1e-9, ref: v.basis === '650' ? '650 7.2.3.1' : '653 10.4.4.1' };
+      });
+      return { summary: [], checks, notes: [] };
+    }
+  });
+
+  add({
+    id: 'WD-02', grp: 'WD', title: 'Projection sambungan horizontal',
+    refs: ['API 650 7.2.3.2', 'API 653 10.4.4.2'],
+    params: ['Tebal plat atas', 'Projection plat atas terhadap plat bawah', 'Batas 20% t (maks. 3 mm) atau 1.5 mm'],
+    desc: 'Plat atas tidak boleh menonjol melewati muka plat bawah lebih dari 20% tebal plat atas, maks. 3 mm (1/8 in). Untuk plat atas < 8 mm (5/16 in): maks. 1.5 mm (1/16 in).',
+    fields: [{ k: 'basis', l: 'Basis', type: 'sel', opts: basisOpts, def: 0 }],
+    table: {
+      k: 'pts', l: 'Sambungan horizontal',
+      cols: [{ k: 'id', l: 'Sambungan / lokasi', type: 'text', def: '' }, { k: 't', l: 't plat atas (mm)', def: '' }, { k: 'p', l: 'Projection (mm)', def: '' }],
+      rows: [{ id: 'H1 @0°', t: 12, p: 2.1 }, { id: 'H2 @90°', t: 10, p: 2.4 }, { id: 'H4 @180°', t: 6, p: 1.8 }, { id: 'H5 @270°', t: 8, p: 1.2 }]
+    },
+    compute(v, rows) {
+      const checks = rows.filter(r => num(r.t) && num(r.p)).map(r => {
+        const lim = v.basis === '650' ? C.projHoriz(r.t) : (r.t < 7.9375 ? 1.5875 : Math.min(0.2 * r.t, 3.175));
+        return { l: `${r.id} (t atas ${f(r.t, 1)}): projection ≤ batas`, meas: f(r.p, 1), lim: '≤ ' + f(lim, 2), u: 'mm', ok: r.p <= lim + 1e-9, ref: v.basis === '650' ? '650 7.2.3.2' : '653 10.4.4.2' };
+      });
+      return { summary: [], checks, notes: ['Sisi dalam course atas tidak boleh menonjol melewati sisi dalam course bawah (650 5.6.1.3). Plat atas yang > 3 mm lebih tebal dari plat bawah butuh taper 4:1 (7.2.3.3).'] };
+    }
+  });
+
+  add({
+    id: 'WD-03', grp: 'WD', title: 'Weld reinforcement & undercut',
+    refs: ['API 650 8.5.2 b)', 'API 650 8.5.2 d)'],
+    params: ['Tinggi reinforcement butt weld', 'Kedalaman undercut'],
+    desc: 'Reinforcement maks.: t ≤ 13 mm → V 2.5 / H 3 mm; 13–25 mm → V 3 / H 5 mm; > 25 mm → V 5 / H 6 mm. Undercut maks.: 0.4 mm (vertikal, nozzle, shell-to-bottom dalam), 0.8 mm (horizontal, annular).',
+    table: {
+      k: 'pts', l: 'Sambungan las',
+      cols: [{ k: 'id', l: 'Sambungan', type: 'text', def: '' }, { k: 'o', l: 'Orientasi', type: 'sel', opts: [{ v: 'V', l: 'Vertikal' }, { v: 'H', l: 'Horizontal' }], def: 0 }, { k: 't', l: 't plat (mm)', def: '' }, { k: 'r', l: 'Reinforcement (mm)', def: '' }, { k: 'u', l: 'Undercut (mm)', def: '' }],
+      rows: [{ id: 'V1-1', o: 0, t: 14, r: 2.6, u: 0.3 }, { id: 'H1-2', o: 1, t: 12, r: 3.4, u: 0.6 }, { id: 'V2-4', o: 0, t: 10, r: 1.8, u: 0.5 }]
+    },
+    compute(v, rows) {
+      const checks = [];
+      rows.forEach(r => {
+        const H = r.o === 'H';
+        if (num(r.t) && num(r.r)) { const lim = C.weldReinf(r.t, H); checks.push({ l: `${r.id}: reinforcement ≤ batas`, meas: f(r.r, 1), lim: '≤ ' + f(lim, 1), u: 'mm', ok: r.r <= lim, ref: '650 8.5.2 d)' }); }
+        if (num(r.u)) { const lim = H ? 0.8 : 0.4; checks.push({ l: `${r.id}: undercut ≤ batas`, meas: f(r.u, 1), lim: '≤ ' + f(lim, 1), u: 'mm', ok: r.u <= lim, ref: '650 8.5.2 b)' }); }
+      });
+      return { summary: [], checks, notes: ['Porositas permukaan: maks. 1 cluster per 100 mm, diameter cluster ≤ 2.5 mm (8.5.2 c).'] };
+    }
+  });
+
+  add({
+    id: 'FD-01', grp: 'FD', title: 'Kerataan foundation / ringwall',
+    refs: ['API 650 7.5.5.2', 'API 653 10.5.6.2'],
+    params: ['Deviasi dari elevasi rata-rata (total keliling)', 'Deviasi lokal per 9 m (ringwall) / 3 m (tanpa ringwall)'],
+    desc: 'Ringwall: ±3 mm dalam setiap 9 m keliling dan ±6 mm total dari rata-rata. Tanpa ringwall: ±3 mm per 3 m dan ±13 mm total. (API 653 dalam in: 1/8, 1/4, 1/2 in.)',
+    fields: [
+      { k: 'basis', l: 'Basis', type: 'sel', opts: basisOpts, def: 0 },
+      { k: 'rw', l: 'Jenis foundation', type: 'sel', opts: [{ v: true, l: 'Concrete ringwall' }, { v: false, l: 'Tanpa ringwall' }], def: 0 },
+      { k: 'D', l: 'Diameter D', u: 'm', def: 30, link: 'D' }
+    ],
+    table: {
+      k: 'pts', l: 'Elevasi titik berjarak sama di keliling (mulai 0°)',
+      cols: [{ k: 'e', l: 'Elevasi (mm)', def: '' }],
+      rows: [0, 2, 3, 1, -2, -4, -3, 0, 2, 4, 3, 1].map(e => ({ e }))
+    },
+    compute(v, rows) {
+      const e = rows.map(r => r.e).filter(num);
+      const n = e.length;
+      const circ = Math.PI * v.D;
+      const sp = circ / n;
+      const inch = v.basis === '653';
+      const totLim = v.rw ? (inch ? 6.35 : 6) : (inch ? 12.7 : 13);
+      const locLim = inch ? 3.175 : 3;
+      const win = v.rw ? 9 : 3;
+      const avg = e.reduce((a, b) => a + b, 0) / n;
+      const dev = e.map(x => x - avg);
+      const checks = [{ l: 'Deviasi maks. dari rata-rata (total keliling)', meas: f(Math.max(...dev.map(Math.abs)), 1), lim: '± ' + f(totLim, 2), u: 'mm', ok: Math.max(...dev.map(Math.abs)) <= totLim, ref: inch ? '653 10.5.6.2' : '650 7.5.5.2' }];
+      // jendela busur: titik-titik dalam panjang win
+      const k = Math.max(1, Math.floor(win / sp));
+      let worst = 0, at = 0;
+      if (k >= 1) for (let i = 0; i < n; i++) {
+        const w = []; for (let j = 0; j <= k; j++) w.push(e[(i + j) % n]);
+        const m = w.reduce((a, b) => a + b, 0) / w.length;
+        const d = Math.max(...w.map(x => Math.abs(x - m)));
+        if (d > worst) { worst = d; at = i; }
+      }
+      if (sp > win) checks.push({ l: `Jarak titik (${f(sp, 2)} m) > ${win} m: tambah titik ukur agar deviasi lokal dapat dinilai`, ok: 'warn', ref: '' });
+      else checks.push({ l: `Deviasi lokal dalam setiap ${win} m keliling`, meas: f(worst, 1), lim: '± ' + f(locLim, 2), u: 'mm', ok: worst <= locLim, ref: inch ? '653 10.5.6.2' : '650 7.5.5.2' });
+      return {
+        summary: [{ l: 'Elevasi rata-rata', v: f(avg, 1), u: 'mm' }, { l: 'Jarak antar titik', v: f(sp, 2), u: 'm' }, { l: 'Deviasi lokal terbesar', v: f(worst, 1), u: 'mm', s: 'mulai titik ' + (at + 1) }],
+        checks,
+        chart: { type: 'line', xLabel: 'Titik', yLabel: 'mm dari rata-rata', x: e.map((_, i) => i + 1), series: [{ name: 'Deviasi', y: dev, cls: 's1' }], hlines: [{ y: totLim, name: '+batas', cls: 'lim' }, { y: -totLim, name: '−batas', cls: 'lim' }] },
+        notes: ['Deviasi lokal dihitung sebagai simpangan terbesar terhadap rata-rata titik-titik di dalam jendela busur yang sama (interpretasi "level within ±3 mm in any 9 m").', 'Untuk foundation miring, bandingkan selisih elevasi aktual dengan selisih terhitung dari titik tertinggi (7.5.5.3 / 10.5.6.3).']
+      };
+    }
+  });
+
+  /* ================= C · SETTLEMENT ================= */
+  const YEfields = [
+    { k: 'Y', l: 'Yield strength shell Y', u: 'psi', def: 30000 },
+    { k: 'E', l: 'Modulus Young E', u: 'psi', def: 29000000 }
+  ];
+
+  add({
+    id: 'ST-01', grp: 'ST', title: 'Shell settlement (cosine fit)',
+    refs: ['API 653 B.2.2.4', 'API 653 B.3.2.1', 'Figure B.1 / B.3'],
+    params: ['Uniform settlement', 'Rigid tilt (kurva cosinus, R² ≥ 0.9)', 'Out-of-plane Si', 'Smax izin'],
+    desc: 'Elevasi keliling di-fit dengan Elev = a + b cos(θ + c). Si = Ui − ½(Ui−k + Ui+k). Smax = L² Y 11 / (2 E H) (ft). Jarak titik ≤ 32 ft (9.75 m), minimal 8 titik.',
+    fields: [
+      { k: 'D', l: 'Diameter D', u: 'm', def: 30, link: 'D' },
+      { k: 'H', l: 'Tinggi tangki H', u: 'm', def: 14.4, link: 'Hs' },
+      ...YEfields,
+      { k: 'k', l: 'Langkah titik untuk Si (1 = semua titik)', u: '', def: 1 }
+    ],
+    table: {
+      k: 'pts', l: 'Elevasi shell berjarak sama (mulai 0°, searah jarum jam)',
+      cols: [{ k: 'e', l: 'Elevasi (mm)', def: '' }],
+      rows: [0, -8, -19, -31, -42, -50, -55, -54, -47, -38, -25, -9].map(e => ({ e: e - 12 }))
+    },
+    compute(v, rows) {
+      const elev = rows.map(r => r.e).filter(num);
+      const n = elev.length;
+      if (n < 4) return { summary: [], checks: [{ l: 'Masukkan minimal 8 titik', ok: false }], notes: [] };
+      const r = C.settlementCosine({ elev, D: v.D, H: v.H, Y: v.Y, E: v.E, k: v.k || 1 });
+      const spacing = Math.PI * v.D / n;
+      const checks = [
+        { l: 'Jumlah titik ≥ 8', meas: n, lim: '≥ 8', u: 'titik', ok: n >= 8, ref: 'Fig. B.1' },
+        { l: 'Jarak antar titik ≤ 32 ft (9.75 m)', meas: f(spacing * (v.k || 1), 2), lim: '≤ 9.75', u: 'm', ok: spacing * (v.k || 1) <= 9.754, ref: 'B.2.2.4 Note' },
+        { l: 'R² kurva cosinus ≥ 0.9 (tilt plane valid)', meas: f(r.fit.R2, 3), lim: '≥ 0.90', u: '', ok: r.fit.R2 >= 0.9 ? true : 'warn', ref: 'B.2.2.4 e)' }
+      ];
+      const maxS = Math.max(...r.S.map(Math.abs));
+      checks.push({ l: '|Si| maks. ≤ Smax', meas: f(maxS, 1), lim: '≤ ' + f(r.Smax, 1), u: 'mm', ok: maxS <= r.Smax, ref: 'B.3.2.1' });
+      const theta = elev.map((_, i) => 360 * i / n);
+      return {
+        summary: [
+          { l: 'Uniform settlement (titik terendah)', v: f(r.uniform, 1), u: 'mm' },
+          { l: 'Amplitudo tilt b', v: f(r.fit.b, 1), u: 'mm' },
+          { l: 'R²', v: f(r.fit.R2, 3), u: '' },
+          { l: 'Smax izin', v: f(r.Smax, 1), u: 'mm', s: f(r.SmaxIn, 2) + ' in' }
+        ],
+        checks,
+        table: { head: ['Titik', 'θ (°)', 'Elevasi', 'Prediksi cos', 'Ui', 'Si', 'Status'], rows: elev.map((e, i) => [i + 1, f(theta[i], 0), f(e, 1), f(r.fit.pred[i], 1), f(r.U[i], 1), f(r.S[i], 1), { ok: Math.abs(r.S[i]) <= r.Smax }]) },
+        chart: { type: 'line', xLabel: 'θ (°)', yLabel: 'Elevasi (mm)', x: theta, series: [{ name: 'Terukur', y: elev, cls: 's1' }, { name: 'Cosine fit', y: r.fit.pred, cls: 's2' }] },
+        notes: ['Bila R² < 0.9 atau Smax terlampaui, gunakan metode settlement arc (ST-02) atau analisis lebih rinci (B.3.2.4).', 'Kriteria ini tidak mencakup ridge/perubahan elevasi tajam, nozzle rendah, atau pola lipat pada cone roof dengan kolom.']
+      };
+    }
+  });
+
+  add({
+    id: 'ST-02', grp: 'ST', title: 'Out-of-plane settlement (settlement arc)',
+    refs: ['API 653 B.2.2.5', 'API 653 B.3.2.2'],
+    params: ['Settlement arc Sarc', 'Out-of-plane Si', 'Faktor K (open top / fixed roof)', 'Smax = min(K·Sarc·(D/H)·(Y/E), 4 in)'],
+    desc: 'Dipakai bila tilt plane tidak terdefinisi baik atau Smax B.3.2.1 terlampaui. Untuk pola lipat (fold) gunakan Sarc = 50% keliling.',
+    fields: [
+      { k: 'D', l: 'Diameter D', u: 'm', def: 30, link: 'D' },
+      { k: 'H', l: 'Tinggi tangki H', u: 'm', def: 14.4, link: 'Hs' },
+      { k: 'roof', l: 'Jenis tangki', type: 'sel', opts: [{ v: 'fixed', l: 'Fixed roof' }, { v: 'open', l: 'Open top (floating roof)' }], def: 0, link: 'roofType' },
+      ...YEfields
+    ],
+    table: {
+      k: 'arcs', l: 'Settlement arc',
+      cols: [{ k: 'id', l: 'Arc', type: 'text', def: '' }, { k: 'sarc', l: 'Sarc (m)', def: '' }, { k: 'si', l: 'Si (mm)', def: '' }],
+      rows: [{ id: 'Arc 3–7', sarc: 31, si: 18 }, { id: 'Arc 9–12', sarc: 23, si: 11 }]
+    },
+    compute(v, rows) {
+      const checks = [], trows = [];
+      rows.filter(r => num(r.sarc) && num(r.si)).forEach(r => {
+        const a = C.settlementArc({ Sarc: r.sarc, D: v.D, H: v.H, Y: v.Y, E: v.E, roof: v.roof });
+        if (a.na) { checks.push({ l: `${r.id}: D di luar jangkauan tabel K — perlu analisis rinci`, ok: 'warn', ref: 'B.3.2.2' }); return; }
+        const ok = Math.abs(r.si) <= a.Smax;
+        checks.push({ l: `${r.id}: |Si| ≤ Smax`, meas: f(r.si, 1), lim: '≤ ' + f(a.Smax, 1), u: 'mm', ok, ref: 'B.3.2.2' });
+        trows.push([r.id, f(r.sarc, 2), a.K, f(a.Smax, 1), f(r.si, 1), { ok }]);
+      });
+      return { summary: [], checks, table: { head: ['Arc', 'Sarc (m)', 'K', 'Smax (mm)', 'Si (mm)', 'Status'], rows: trows }, notes: ['Berlaku untuk tangki baja karbon & stainless API 650 dalam rentang diameter tabel K.'] };
+    }
+  });
+
+  add({
+    id: 'ST-03', grp: 'ST', title: 'Edge settlement',
+    refs: ['API 653 B.2.3', 'API 653 B.3.4', 'Figure B.11 / B.12'],
+    params: ['Radius area settle R', 'Settlement B', 'Bew (lap weld ∥ shell) / Be (tanpa las, butt, lap ⟂ shell) / Bα', 'Batas 75% untuk MT/PT'],
+    desc: 'Bα = Be − (Be − Bew) sin α, α = sudut las terhadap garis sumbu tangki. B ≤ 75% batas: boleh kembali beroperasi. 75–100%: las diperiksa visual + MT/PT. > batas: perbaikan atau analisis rinci.',
+    fields: [{ k: 'D', l: 'Diameter D', u: 'm', def: 30, link: 'D' }],
+    table: {
+      k: 'pts', l: 'Area edge settlement',
+      cols: [
+        { k: 'id', l: 'Lokasi', type: 'text', def: '' },
+        { k: 'R', l: 'R (m)', def: '' },
+        { k: 'B', l: 'B (mm)', def: '' },
+        { k: 'w', l: 'Las di area', type: 'sel', opts: [{ v: 'be', l: 'Tanpa las / butt / lap ⟂ shell (Be)' }, { v: 'bew', l: 'Lap ∥ shell (Bew)' }, { v: 'a', l: 'Lap bersudut α' }], def: 0 },
+        { k: 'a', l: 'α (°)', def: '' }
+      ],
+      rows: [{ id: '30°', R: 0.9, B: 38, w: 1, a: '' }, { id: '150°', R: 1.2, B: 62, w: 0, a: '' }, { id: '240°', R: 1.0, B: 70, w: 2, a: 45 }]
+    },
+    compute(v, rows) {
+      const checks = [], trows = [], notes = new Set();
+      rows.filter(r => num(r.R) && num(r.B)).forEach(r => {
+        const e = C.edgeSettlement({ D: v.D, R: r.R, alphaDeg: r.w === 'a' ? r.a : 0 });
+        e.flags.forEach(x => notes.add(x));
+        const allowIn = r.w === 'bew' ? e.BewIn : r.w === 'be' ? e.BeIn : e.BalphaIn;
+        const allow = allowIn * 25.4;
+        const ratio = r.B / allow;
+        const ok = ratio <= 0.75 ? true : ratio <= 1 ? 'warn' : false;
+        checks.push({ l: `${r.id}: B ≤ batas ${r.w === 'bew' ? 'Bew' : r.w === 'be' ? 'Be' : 'Bα'}${ok === 'warn' ? ' (≥ 75%: MT/PT)' : ''}`, meas: f(r.B, 1), lim: '≤ ' + f(allow, 1), u: 'mm', ok, ref: 'B.3.4' });
+        trows.push([r.id, f(r.R, 2), f(r.B, 1), f(e.BewIn * 25.4, 1), f(e.BeIn * 25.4, 1), f(allow, 1), f(ratio * 100, 0) + '%', { ok }]);
+      });
+      return {
+        summary: [], checks,
+        table: { head: ['Lokasi', 'R (m)', 'B (mm)', 'Bew (mm)', 'Be (mm)', 'Batas (mm)', 'B/batas', 'Status'], rows: trows },
+        notes: [...notes, 'Kurva Bew/Be didigitasi dari Figure B.11/B.12 dan diinterpolasi linier terhadap D; verifikasi pada grafik asli bila hasil mendekati batas.', 'Ukur B dari proyeksi bottom yang tidak settle (bukan dari garis level) untuk bottom cone-up/down (Figure B.7).']
+      };
+    }
+  });
+
+  add({
+    id: 'ST-04', grp: 'ST', title: 'Bulge / depresi bottom',
+    refs: ['API 653 B.3.3', 'Figure B.10'],
+    params: ['Radius lingkaran dalam R', 'Tinggi bulge / kedalaman depresi B', 'BB = 0.37 R'],
+    desc: 'BB (in) = 0.37 R (ft), untuk bottom dengan lap weld single-pass. Untuk depresi parsial di tepi gunakan R ≤ 2R pada Figure B.8.',
+    table: {
+      k: 'pts', l: 'Bulge / depresi',
+      cols: [{ k: 'id', l: 'Lokasi', type: 'text', def: '' }, { k: 'R', l: 'R (m)', def: '' }, { k: 'B', l: 'B (mm)', def: '' }],
+      rows: [{ id: 'Bulge dekat sump', R: 1.5, B: 42 }, { id: 'Depresi 120°', R: 2.4, B: 95 }]
+    },
+    compute(v, rows) {
+      const checks = rows.filter(r => num(r.R) && num(r.B)).map(r => {
+        const b = C.bulge(r.R);
+        return { l: `${r.id}: B ≤ 0.37R`, meas: f(r.B, 1), lim: '≤ ' + f(b.BB, 1), u: 'mm', ok: r.B <= b.BB, ref: 'B.3.3' };
+      });
+      return { summary: [], checks, notes: ['Pertimbangkan juga rongga di bawah plat dan kualitas lap weld (B.2.5.2).'] };
+    }
+  });
+
+  add({
+    id: 'ST-05', grp: 'ST', title: 'Settlement saat hydrotest (tangki baru)',
+    refs: ['API 650 7.3.7.7', 'API 650 7.3.7.2'],
+    params: ['Settlement diferensial per 10 m keliling', 'Settlement seragam'],
+    desc: 'Settlement diferensial > 13 mm per 10 m keliling atau settlement seragam > 50 mm dilaporkan ke Purchaser, dan pengisian dihentikan sampai disetujui.',
+    fields: [{ k: 'D', l: 'Diameter D', u: 'm', def: 30, link: 'D' }],
+    table: {
+      k: 'pts', l: 'Settlement kumulatif per titik (mm, positif = turun)',
+      cols: [{ k: 's', l: 'Settlement (mm)', def: '' }],
+      rows: [12, 14, 17, 21, 24, 22, 19, 16, 14, 13, 12, 11].map(s => ({ s }))
+    },
+    compute(v, rows) {
+      const s = rows.map(r => r.s).filter(num);
+      const n = s.length, sp = Math.PI * v.D / n;
+      const lim = 13 * sp / 10;
+      const checks = [{ l: 'Jarak titik ≤ 10 m', meas: f(sp, 2), lim: '≤ 10', u: 'm', ok: sp <= 10, ref: '7.3.7.2' }];
+      let worst = 0;
+      for (let i = 0; i < n; i++) worst = Math.max(worst, Math.abs(s[i] - s[(i + 1) % n]));
+      checks.push({ l: 'Diferensial antar titik bersebelahan ≤ 13 mm × (jarak/10 m)', meas: f(worst, 1), lim: '≤ ' + f(lim, 1), u: 'mm', ok: worst <= lim ? true : 'warn', ref: '7.3.7.7' });
+      const uni = Math.min(...s);
+      checks.push({ l: 'Settlement seragam ≤ 50 mm', meas: f(uni, 1), lim: '≤ 50', u: 'mm', ok: uni <= 50 ? true : 'warn', ref: '7.3.7.7' });
+      return { summary: [{ l: 'Jarak titik', v: f(sp, 2), u: 'm' }, { l: 'Settlement maks.', v: f(Math.max(...s), 1), u: 'mm' }], checks, notes: ['Nilai di luar batas bukan otomatis ditolak; dilaporkan untuk dievaluasi Purchaser.'] };
+    }
+  });
+
+  root.TKModules = { CATS, M, f };
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* Toolkit Tangki — UI: navigasi klasifikasi, data tangki, renderer modul, ringkasan & laporan. */
+(function () {
+  const { CATS, M, f } = window.TKModules;
+  const C = window.TKCalc;
+  const byId = Object.fromEntries(M.map(m => [m.id, m]));
+  const $ = (s, el = document) => el.querySelector(s);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const inFrame = (() => { try { return window.self !== window.top; } catch (e) { return true; } })();
+
+  /* ---------- State ---------- */
+  const SAMPLE_TANK = {
+    tag: 'T-101', name: 'Tangki contoh (data sampel)', loc: '', service: 'Crude oil',
+    D: 30, Hs: 14.4, HL: 13.8, G: 0.9, year: 2005, roofType: 'fixed',
+    courses: [14, 12, 10, 8, 8, 8].map(t => ({ w: 2400, tNom: t }))
+  };
+  const KEY = 'toolkit-tangki-v1';
+  let S = load() || { tank: JSON.parse(JSON.stringify(SAMPLE_TANK)), mods: {}, sample: true };
+  function load() { try { const s = localStorage.getItem(KEY); return s ? JSON.parse(s) : null; } catch (e) { return null; } }
+  let saveT;
+  function save() { clearTimeout(saveT); saveT = setTimeout(() => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { } }, 250); }
+  const ms = id => (S.mods[id] = S.mods[id] || {});
+
+  /* ---------- Parsing ---------- */
+  const parseNum = s => {
+    if (typeof s === 'number') return s;
+    if (s == null) return NaN;
+    const t = String(s).trim().replace(/\s/g, '').replace(',', '.');
+    return t === '' ? NaN : Number(t);
+  };
+
+  /* ---------- Nilai field ---------- */
+  function fieldRaw(m, fd) {
+    const st = ms(m.id);
+    if (st.f && fd.k in st.f) return st.f[fd.k];
+    if (fd.link && S.tank[fd.link] != null && S.tank[fd.link] !== '') {
+      const tv = S.tank[fd.link];
+      if (fd.type === 'sel') { const i = fd.opts.findIndex(o => o.v === tv); return i >= 0 ? i : fd.def; }
+      return tv;
+    }
+    return fd.def;
+  }
+  const isLinked = (m, fd) => fd.link && !(ms(m.id).f && fd.k in ms(m.id).f);
+  function fieldVal(m, fd) {
+    const r = fieldRaw(m, fd);
+    if (fd.type === 'sel') return (fd.opts[r] || fd.opts[fd.def] || fd.opts[0]).v;
+    if (fd.type === 'text') return r;
+    return parseNum(r);
+  }
+  function rowsRaw(m) {
+    const st = ms(m.id);
+    if (st.rows) return st.rows;
+    const t = m.table;
+    if (t.link === 'courses' && S.tank.courses && S.tank.courses.length) {
+      return S.tank.courses.map((c, i) => {
+        const base = Object.assign({}, ...t.cols.map(col => ({ [col.k]: col.def })), t.rows[i] || {});
+        if ('w' in base) base.w = c.w;
+        if ('tNom' in base) base.tNom = c.tNom;
+        return base;
+      });
+    }
+    return t.rows.map(r => Object.assign({}, r));
+  }
+  function rowsVal(m) {
+    return rowsRaw(m).map(r => {
+      const o = {};
+      m.table.cols.forEach(col => {
+        const x = r[col.k];
+        if (col.type === 'sel') { const i = x === '' || x == null ? col.def : x; o[col.k] = (col.opts[i] || col.opts[0]).v; }
+        else if (col.type === 'text') o[col.k] = x == null ? '' : x;
+        else o[col.k] = parseNum(x);
+      });
+      return o;
+    });
+  }
+  function run(m) {
+    const v = {};
+    (m.fields || []).forEach(fd => { v[fd.k] = fieldVal(m, fd); });
+    try {
+      const out = m.compute(v, m.table ? rowsVal(m) : []);
+      out.status = statusOf(out.checks || []);
+      return out;
+    } catch (e) {
+      return { error: 'Input belum lengkap atau tidak valid (' + e.message + ').', checks: [], status: 'na' };
+    }
+  }
+  function statusOf(checks) {
+    if (checks.some(c => c.ok === false)) return 'fail';
+    if (checks.some(c => c.ok === 'warn')) return 'warn';
+    if (checks.some(c => c.ok === true)) return 'pass';
+    return 'na';
+  }
+  const STATUS_TXT = { pass: 'Memenuhi', warn: 'Perlu tindak lanjut', fail: 'Tidak memenuhi', na: 'Info' };
+
+  /* ---------- Sidebar ---------- */
+  function renderNav(filter = '') {
+    const q = filter.trim().toLowerCase();
+    const res = Object.fromEntries(M.map(m => [m.id, run(m).status]));
+    let h = '';
+    CATS.forEach(cat => {
+      let gh = '';
+      cat.groups.forEach(g => {
+        const mods = M.filter(m => m.grp === g.id).filter(m => !q || (m.id + ' ' + m.title + ' ' + m.params.join(' ') + ' ' + m.refs.join(' ')).toLowerCase().includes(q));
+        if (!mods.length) return;
+        gh += `<div class="nav-grp"><div class="nav-grp-t">${esc(g.title)}</div>` +
+          mods.map(m => `<a class="nav-item" href="#${m.id}" data-id="${m.id}"><span class="dot st-${res[m.id]}" title="${STATUS_TXT[res[m.id]]}"></span><span class="code">${m.id}</span><span class="nt">${esc(m.title)}</span></a>`).join('') + '</div>';
+      });
+      if (gh) h += `<section class="nav-cat"><div class="nav-cat-t"><span class="cat-badge">${cat.id}</span>${esc(cat.title)}</div>${gh}</section>`;
+    });
+    $('#nav').innerHTML = h || '<p class="muted pad">Tidak ada modul yang cocok.</p>';
+    markActive();
+  }
+  function markActive() {
+    const id = (location.hash || '').slice(1);
+    document.querySelectorAll('.nav-item, .top-link').forEach(a => a.classList.toggle('active', a.dataset.id === id || a.getAttribute('href') === '#' + id));
+  }
+
+  /* ---------- Views ---------- */
+  function route() {
+    const id = decodeURIComponent((location.hash || '#beranda').slice(1));
+    const main = $('#main');
+    if (byId[id]) renderModule(byId[id]);
+    else if (id === 'tangki') renderTank();
+    else if (id === 'ringkasan') renderSummary();
+    else renderHome();
+    markActive();
+    document.body.classList.remove('nav-open');
+    main.focus({ preventScroll: true });
+    window.scrollTo(0, 0);
+  }
+
+  function sampleBanner() {
+    return S.sample ? `<div class="banner"><p><strong>Data contoh.</strong> Angka yang tampil adalah sampel untuk memperlihatkan cara kerja perhitungan. Isi <a href="#tangki">Data Tangki</a> dan tabel inspeksi dengan data Anda.</p><button class="btn ghost sm" data-close-banner>Tutup</button></div>` : '';
+  }
+
+  function renderHome() {
+    const res = Object.fromEntries(M.map(m => [m.id, run(m).status]));
+    const count = s => M.filter(m => res[m.id] === s).length;
+    $('#main').innerHTML = `
+      ${sampleBanner()}
+      <header class="page-h">
+        <p class="eyebrow">Klasifikasi evaluasi · API 653 5th Ed. (2014) &amp; API 650 (2020)</p>
+        <h1>Pilih apa yang mau dianalisa</h1>
+        <p class="lead">Tiga kategori di bawah memisahkan <b>perhitungan komponen</b>, <b>inspeksi dimensional dengan toleransi</b>, dan <b>settlement</b>. Setiap modul punya kode (mis. <span class="code">SH-01</span>) supaya hasil mudah ditelusuri balik ke klausul standar dan ke parameter yang ditinjau.</p>
+        <div class="kpis">
+          <div class="kpi"><span class="n">${M.length}</span><span>modul</span></div>
+          <div class="kpi st-pass"><span class="n">${count('pass')}</span><span>memenuhi</span></div>
+          <div class="kpi st-warn"><span class="n">${count('warn')}</span><span>tindak lanjut</span></div>
+          <div class="kpi st-fail"><span class="n">${count('fail')}</span><span>tidak memenuhi</span></div>
+        </div>
+      </header>
+      ${CATS.map(cat => `
+        <section class="cat-block">
+          <div class="cat-h"><span class="cat-badge lg">${cat.id}</span><div><h2>${esc(cat.title)}</h2><p class="muted">${esc(cat.desc)}</p></div></div>
+          ${cat.groups.map(g => `
+            <div class="trace">
+              <h3>${esc(g.title)} <span class="code muted">${g.id}</span></h3>
+              <div class="trace-tbl" role="table">
+                <div class="tr th" role="row"><span>Kode</span><span>Modul</span><span>Parameter yang ditinjau</span><span>Referensi</span><span>Status</span></div>
+                ${M.filter(m => m.grp === g.id).map(m => `
+                  <a class="tr" role="row" href="#${m.id}">
+                    <span class="code">${m.id}</span>
+                    <span class="tt">${esc(m.title)}</span>
+                    <span class="chips">${m.params.map(p => `<i>${esc(p)}</i>`).join('')}</span>
+                    <span class="refs">${m.refs.map(esc).join('<br>')}</span>
+                    <span><b class="pill st-${res[m.id]}">${STATUS_TXT[res[m.id]]}</b></span>
+                  </a>`).join('')}
+              </div>
+            </div>`).join('')}
+        </section>`).join('')}`;
+  }
+
+  /* ----- Data tangki ----- */
+  function renderTank() {
+    const t = S.tank;
+    const fld = (k, l, u, type = 'num') => `<label class="fld"><span class="fl">${l}${u ? ` <em>${u}</em>` : ''}</span><input id="tk-${k}" data-k="${k}" ${type === 'num' ? 'inputmode="decimal"' : ''} value="${esc(t[k])}"></label>`;
+    $('#main').innerHTML = `
+      ${sampleBanner()}
+      <header class="page-h"><p class="eyebrow">Profil</p><h1>Data Tangki</h1>
+      <p class="lead">Nilai di sini otomatis dipakai oleh modul yang ditandai <span class="lnk-ic">⛓</span>. Ubah di modul bila satu perhitungan butuh nilai lain.</p></header>
+      <div class="card form-grid">
+        ${fld('tag', 'Tag / nomor tangki', '', 'text')}${fld('name', 'Nama / keterangan', '', 'text')}
+        ${fld('loc', 'Lokasi', '', 'text')}${fld('service', 'Produk / service', '', 'text')}
+        ${fld('D', 'Diameter nominal D', 'm')}${fld('Hs', 'Tinggi shell', 'm')}
+        ${fld('HL', 'Tinggi cairan maks.', 'm')}${fld('G', 'Specific gravity G', '–')}
+        ${fld('year', 'Tahun mulai operasi', '')}
+        <label class="fld"><span class="fl">Jenis roof</span><select id="tk-roofType" data-k="roofType">
+          <option value="fixed" ${t.roofType === 'fixed' ? 'selected' : ''}>Fixed roof</option>
+          <option value="open" ${t.roofType === 'open' ? 'selected' : ''}>Open top / floating roof</option></select></label>
+      </div>
+      <div class="card">
+        <div class="tbl-h"><h3>Shell course</h3><span class="muted">Course 1 = paling bawah</span></div>
+        <div class="tbl-wrap"><table class="edit" id="tk-courses"><thead><tr><th>#</th><th>Lebar (mm)</th><th>t nominal (mm)</th><th></th></tr></thead><tbody>
+        ${t.courses.map((c, i) => `<tr><td class="rn">${i + 1}</td><td><input id="tkc-${i}-w" data-i="${i}" data-c="w" inputmode="decimal" value="${esc(c.w)}"></td><td><input id="tkc-${i}-tNom" data-i="${i}" data-c="tNom" inputmode="decimal" value="${esc(c.tNom)}"></td><td><button class="ic" data-del="${i}" aria-label="Hapus course ${i + 1}">×</button></td></tr>`).join('')}
+        </tbody></table></div>
+        <div class="row-btns"><button class="btn" id="tk-add">+ Tambah course</button>
+        <span class="muted">Tinggi shell dari course: <b class="num">${f(t.courses.reduce((a, c) => a + (parseNum(c.w) || 0), 0) / 1000)}</b> m</span></div>
+      </div>
+      <div class="card row-btns">
+        <button class="btn" id="tk-sync">Terapkan course ke semua modul</button>
+        <button class="btn ghost" id="tk-clear">Mulai proyek baru (kosongkan)</button>
+        <button class="btn ghost" id="tk-sample">Muat ulang data contoh</button>
+      </div>`;
+    $('#main').querySelectorAll('[data-k]').forEach(el => el.addEventListener('input', () => {
+      const k = el.dataset.k;
+      S.tank[k] = el.tagName === 'SELECT' || ['tag', 'name', 'loc', 'service'].includes(k) ? el.value : (isNaN(parseNum(el.value)) ? el.value : parseNum(el.value));
+      changed();
+    }));
+    $('#tk-courses').addEventListener('input', e => {
+      const el = e.target; if (!el.dataset.c) return;
+      S.tank.courses[+el.dataset.i][el.dataset.c] = parseNum(el.value);
+      changed();
+    });
+    $('#tk-courses').addEventListener('click', e => {
+      const d = e.target.dataset.del; if (d == null) return;
+      S.tank.courses.splice(+d, 1); changed(); renderTank();
+    });
+    $('#tk-add').onclick = () => { const last = S.tank.courses[S.tank.courses.length - 1] || { w: 2400, tNom: 8 }; S.tank.courses.push({ ...last }); changed(); renderTank(); };
+    $('#tk-sync').onclick = () => { M.forEach(m => { if (m.table && m.table.link === 'courses') delete ms(m.id).rows; }); changed(); toast('Course diterapkan ke SH-01, SH-04, SH-05.'); };
+    $('#tk-clear').onclick = () => confirmInline($('#tk-clear'), 'Kosongkan semua data?', () => {
+      S = { tank: { tag: '', name: '', loc: '', service: '', D: '', Hs: '', HL: '', G: 1, year: '', roofType: 'fixed', courses: [{ w: 2400, tNom: '' }] }, mods: {}, sample: false };
+      M.forEach(m => { if (m.table) ms(m.id).rows = m.table.link === 'courses' ? undefined : [Object.fromEntries(m.table.cols.map(c => [c.k, c.type === 'sel' ? c.def : '']))]; });
+      changed(); renderTank();
+    });
+    $('#tk-sample').onclick = () => confirmInline($('#tk-sample'), 'Timpa dengan data contoh?', () => {
+      S = { tank: JSON.parse(JSON.stringify(SAMPLE_TANK)), mods: {}, sample: true }; changed(); renderTank();
+    });
+  }
+
+  /* ----- Modul ----- */
+  function catOf(m) { return CATS.find(c => c.groups.some(g => g.id === m.grp)); }
+  function renderModule(m) {
+    const cat = catOf(m), grp = cat.groups.find(g => g.id === m.grp);
+    $('#main').innerHTML = `
+      ${sampleBanner()}
+      <nav class="crumb"><a href="#beranda">Klasifikasi</a> › <span>${cat.id} · ${esc(cat.title)}</span> › <span>${esc(grp.title)}</span></nav>
+      <header class="page-h mod-h">
+        <p class="eyebrow"><span class="code">${m.id}</span></p>
+        <h1>${esc(m.title)}</h1>
+        <div class="refs-row">${m.refs.map(r => `<span class="ref">${esc(r)}</span>`).join('')}</div>
+        <p class="lead">${esc(m.desc)}</p>
+        <div class="params"><span class="pl">Parameter yang ditinjau</span>${m.params.map((p, i) => `<span class="param"><b>${i + 1}</b>${esc(p)}</span>`).join('')}</div>
+      </header>
+      <div class="mod-grid">
+        <section class="inputs card" aria-label="Input">
+          <div class="sec-h"><h2>Input</h2><button class="btn ghost sm" id="m-reset">Reset modul</button></div>
+          ${(m.fields || []).length ? `<div class="form-grid one">${m.fields.map(fd => fieldHtml(m, fd)).join('')}</div>` : ''}
+          ${m.table ? tableHtml(m) : ''}
+        </section>
+        <section class="results" id="m-res" aria-live="polite"></section>
+      </div>`;
+    bindModule(m);
+    renderResults(m);
+  }
+  function fieldHtml(m, fd) {
+    const raw = fieldRaw(m, fd), lk = isLinked(m, fd);
+    const lab = `<span class="fl">${esc(fd.l)}${fd.u ? ` <em>${esc(fd.u)}</em>` : ''}${fd.link ? (lk ? ' <span class="lnk-ic" title="Mengikuti Data Tangki">⛓</span>' : ` <button class="relink" data-relink="${fd.k}" title="Ikuti Data Tangki lagi">↺ data tangki</button>`) : ''}</span>`;
+    if (fd.type === 'sel') return `<label class="fld">${lab}<select id="f-${m.id}-${fd.k}" data-f="${fd.k}">${fd.opts.map((o, i) => `<option value="${i}" ${+raw === i ? 'selected' : ''}>${esc(o.l)}</option>`).join('')}</select></label>`;
+    return `<label class="fld">${lab}<input id="f-${m.id}-${fd.k}" data-f="${fd.k}" inputmode="decimal" value="${esc(raw)}"></label>`;
+  }
+  function tableHtml(m) {
+    const t = m.table, rows = rowsRaw(m);
+    return `<div class="tbl-h"><h3>${esc(t.l)}</h3>${t.link === 'courses' ? '<button class="btn ghost sm" id="m-sync">Ambil dari Data Tangki</button>' : ''}</div>
+      <p class="hint">Tempel langsung dari Excel: klik sel pertama lalu Ctrl+V. Baris bertambah otomatis.</p>
+      <div class="tbl-wrap"><table class="edit" id="m-tbl"><thead><tr><th>#</th>${t.cols.map(c => `<th>${esc(c.l)}</th>`).join('')}<th></th></tr></thead><tbody>
+      ${rows.map((r, i) => `<tr><td class="rn">${i + 1}</td>${t.cols.map(c => cellHtml(m, c, r, i)).join('')}<td><button class="ic" data-del="${i}" aria-label="Hapus baris ${i + 1}">×</button></td></tr>`).join('')}
+      </tbody></table></div>
+      <div class="row-btns"><button class="btn" id="m-add">+ Tambah baris</button><button class="btn ghost sm" id="m-clr">Kosongkan tabel</button></div>`;
+  }
+  function cellHtml(m, c, r, i) {
+    const x = r[c.k], id = `c-${m.id}-${i}-${c.k}`;
+    if (c.type === 'sel') return `<td><select id="${id}" data-r="${i}" data-c="${c.k}">${c.opts.map((o, j) => `<option value="${j}" ${(+(x === '' || x == null ? c.def : x)) === j ? 'selected' : ''}>${esc(o.l)}</option>`).join('')}</select></td>`;
+    return `<td><input id="${id}" data-r="${i}" data-c="${c.k}" ${c.type === 'text' ? '' : 'inputmode="decimal"'} value="${esc(x)}"></td>`;
+  }
+  function bindModule(m) {
+    const st = ms(m.id);
+    const main = $('#main');
+    main.querySelectorAll('[data-f]').forEach(el => el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', () => {
+      st.f = st.f || {};
+      st.f[el.dataset.f] = el.tagName === 'SELECT' ? +el.value : el.value;
+      const fd = m.fields.find(x => x.k === el.dataset.f);
+      if (fd.link && !el.closest('.fld').querySelector('.relink')) { const ic = el.closest('.fld').querySelector('.lnk-ic'); if (ic) ic.outerHTML = `<button class="relink" data-relink="${fd.k}" title="Ikuti Data Tangki lagi">↺ data tangki</button>`; }
+      changed(m);
+    }));
+    main.addEventListener('click', e => {
+      const rl = e.target.closest('[data-relink]');
+      if (rl) { delete st.f[rl.dataset.relink]; changed(m); renderModule(m); }
+    });
+    $('#m-reset').onclick = () => confirmInline($('#m-reset'), 'Reset input modul ini?', () => { delete S.mods[m.id]; changed(m); renderModule(m); });
+    if (!m.table) return;
+    const tbl = $('#m-tbl');
+    const ensureRows = () => (st.rows = st.rows || rowsRaw(m).map(r => ({ ...r })));
+    tbl.addEventListener('input', e => {
+      const el = e.target; if (!el.dataset.c) return;
+      ensureRows()[+el.dataset.r][el.dataset.c] = el.tagName === 'SELECT' ? +el.value : el.value;
+      changed(m);
+    });
+    tbl.addEventListener('change', e => { if (e.target.tagName === 'SELECT') { ensureRows()[+e.target.dataset.r][e.target.dataset.c] = +e.target.value; changed(m); } });
+    tbl.addEventListener('click', e => {
+      const d = e.target.dataset.del; if (d == null) return;
+      ensureRows().splice(+d, 1); changed(m); renderModule(m);
+    });
+    tbl.addEventListener('paste', e => {
+      const el = e.target; if (!el.dataset || el.dataset.c == null) return;
+      const txt = (e.clipboardData || window.clipboardData).getData('text');
+      if (!/[\t\n]/.test(txt.trim())) return;
+      e.preventDefault();
+      const grid = txt.replace(/\r/g, '').replace(/\n$/, '').split('\n').map(l => l.split(/\t|;/));
+      const rows = ensureRows();
+      const c0 = m.table.cols.findIndex(c => c.k === el.dataset.c), r0 = +el.dataset.r;
+      grid.forEach((line, i) => {
+        const ri = r0 + i;
+        if (!rows[ri]) rows[ri] = Object.fromEntries(m.table.cols.map(c => [c.k, c.type === 'sel' ? c.def : '']));
+        line.forEach((cell, j) => {
+          const col = m.table.cols[c0 + j]; if (!col) return;
+          if (col.type === 'sel') {
+            const s = cell.trim().toLowerCase();
+            let k = col.opts.findIndex(o => o.l.toLowerCase().startsWith(s) || String(o.v).toLowerCase() === s);
+            rows[ri][col.k] = k >= 0 ? k : col.def;
+          } else rows[ri][col.k] = cell.trim();
+        });
+      });
+      changed(m); renderModule(m);
+      toast(`${grid.length} baris ditempel.`);
+    });
+    $('#m-add').onclick = () => {
+      const rows = ensureRows();
+      const last = rows[rows.length - 1];
+      const keep = ['w', 'mat', 'o', 't', 'tNom'];
+      rows.push(Object.fromEntries(m.table.cols.map(c => [c.k, last && (c.type === 'sel' || keep.includes(c.k)) ? last[c.k] : (c.type === 'sel' ? c.def : '')])));
+      changed(m); renderModule(m);
+      const inp = $('#m-tbl tbody tr:last-child input'); if (inp) inp.focus();
+    };
+    $('#m-clr').onclick = () => confirmInline($('#m-clr'), 'Kosongkan tabel?', () => { st.rows = [Object.fromEntries(m.table.cols.map(c => [c.k, c.type === 'sel' ? c.def : '']))]; changed(m); renderModule(m); });
+    const sy = $('#m-sync'); if (sy) sy.onclick = () => { delete st.rows; changed(m); renderModule(m); };
+  }
+
+  function renderResults(m) {
+    const r = run(m);
+    $('#m-res').innerHTML = resultsHtml(r);
+  }
+  function resultsHtml(r, compact) {
+    if (r.error) return `<div class="card err">${esc(r.error)}</div>`;
+    const ck = r.checks || [];
+    const nFail = ck.filter(c => c.ok === false).length, nWarn = ck.filter(c => c.ok === 'warn').length, nPass = ck.filter(c => c.ok === true).length;
+    return `
+      <div class="verdict st-${r.status}"><span class="vt">${STATUS_TXT[r.status]}</span><span class="vs">${nPass} memenuhi · ${nWarn} tindak lanjut · ${nFail} tidak memenuhi</span></div>
+      ${(r.summary || []).length ? `<div class="tiles">${r.summary.map(s => `<div class="tile"><span class="tl">${esc(s.l)}</span><span class="tv num">${esc(s.v)}<small>${esc(s.u)}</small></span>${s.s ? `<span class="ts">${esc(s.s)}</span>` : ''}</div>`).join('')}</div>` : ''}
+      ${ck.length ? `<div class="card flush"><div class="tbl-wrap"><table class="checks"><thead><tr><th>Pemeriksaan</th><th class="r">Terukur</th><th class="r">Kriteria</th><th>Ref.</th><th>Status</th></tr></thead><tbody>
+        ${ck.map(c => `<tr class="row-${okCls(c.ok)}"><td>${esc(c.l)}</td><td class="r num">${c.meas != null ? esc(c.meas) + (c.u ? ` <small>${esc(c.u)}</small>` : '') : ''}</td><td class="r num">${c.lim != null ? esc(c.lim) : ''}</td><td class="ref-c">${esc(c.ref || '')}</td><td><b class="pill st-${okCls(c.ok)}">${okTxt(c.ok)}</b></td></tr>`).join('')}
+      </tbody></table></div></div>` : ''}
+      ${r.chart && !compact ? `<div class="card chart-card">${chartSvg(r.chart)}</div>` : ''}
+      ${r.table ? `<div class="card flush"><div class="tbl-wrap"><table class="out"><thead><tr>${r.table.head.map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>
+        ${r.table.rows.map(row => `<tr>${row.map(c => c && typeof c === 'object' ? `<td><b class="pill st-${okCls(c.ok)}">${okTxt(c.ok)}</b></td>` : `<td class="num">${esc(c)}</td>`).join('')}</tr>`).join('')}
+      </tbody></table></div></div>` : ''}
+      ${(r.notes || []).length ? `<ul class="notes">${r.notes.map(n => `<li>${esc(n)}</li>`).join('')}</ul>` : ''}`;
+  }
+  const okCls = ok => ok === true ? 'pass' : ok === false ? 'fail' : ok === 'warn' ? 'warn' : 'na';
+  const okTxt = ok => ok === true ? 'OK' : ok === false ? 'NG' : ok === 'warn' ? 'Cek' : 'Info';
+
+  /* ---------- Chart SVG ---------- */
+  function chartSvg(ch) {
+    const W = 640, H = 260, L = 52, R = 14, T = 26, B = 42;
+    const pw = W - L - R, ph = H - T - B;
+    const bars = ch.type === 'bars';
+    const n = bars ? ch.cats.length : ch.x.length;
+    if (!n) return '';
+    let ys = [];
+    ch.series.forEach(s => s.y.forEach(y => { if (Number.isFinite(y)) ys.push(y); }));
+    (ch.hlines || []).forEach(h => ys.push(h.y));
+    if (bars) ys.push(0);
+    let lo = Math.min(...ys), hi = Math.max(...ys);
+    if (lo === hi) { lo -= 1; hi += 1; }
+    const pad = (hi - lo) * 0.08; lo -= bars && lo >= 0 ? 0 : pad; hi += pad;
+    const ticks = niceTicks(lo, hi, 5); lo = Math.min(lo, ticks[0]); hi = Math.max(hi, ticks[ticks.length - 1]);
+    const Y = v => T + ph - (v - lo) / (hi - lo) * ph;
+    let X, bw = 0;
+    if (bars) { const step = pw / n; bw = Math.min(step * 0.6, 46); X = i => L + step * (i + 0.5); }
+    else { const x0 = Math.min(...ch.x), x1 = Math.max(...ch.x); X = i => L + (x1 === x0 ? pw / 2 : (ch.x[i] - x0) / (x1 - x0) * pw); }
+    let g = '';
+    ticks.forEach(t => { g += `<line class="grid" x1="${L}" x2="${W - R}" y1="${Y(t)}" y2="${Y(t)}"/><text class="ax" x="${L - 6}" y="${Y(t) + 4}" text-anchor="end">${fmtTick(t)}</text>`; });
+    if (lo < 0 && hi > 0) g += `<line class="zero" x1="${L}" x2="${W - R}" y1="${Y(0)}" y2="${Y(0)}"/>`;
+    const every = Math.ceil(n / 12);
+    for (let i = 0; i < n; i += every) g += `<text class="ax" x="${X(i)}" y="${H - B + 16}" text-anchor="middle">${esc(bars ? ch.cats[i] : fmtTick(ch.x[i]))}</text>`;
+    g += `<text class="ax-l" x="${L + pw / 2}" y="${H - 6}" text-anchor="middle">${esc(ch.xLabel)}</text><text class="ax-l" x="12" y="${T + ph / 2}" transform="rotate(-90 12 ${T + ph / 2})" text-anchor="middle">${esc(ch.yLabel)}</text>`;
+    let marks = '';
+    ch.series.forEach((s, si) => {
+      if (bars && !s.line) {
+        s.y.forEach((y, i) => { if (!Number.isFinite(y)) return; const y0 = Y(Math.max(0, Math.min(y, 0)) === 0 ? 0 : 0); const top = Math.min(Y(y), Y(0)), h = Math.abs(Y(y) - Y(0)); marks += `<rect class="bar ${s.cls}" x="${X(i) - bw / 2}" y="${top}" width="${bw}" height="${Math.max(h, 1)}" rx="2"><title>${esc((bars ? ch.cats[i] : '') + ': ' + f(y, 2))}</title></rect>`; });
+      } else {
+        let d = '', pen = false;
+        s.y.forEach((y, i) => { if (!Number.isFinite(y)) { pen = false; return; } d += (pen ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(y).toFixed(1); pen = true; });
+        marks += `<path class="ln ${s.cls}" d="${d}" fill="none"/>`;
+        s.y.forEach((y, i) => { if (Number.isFinite(y)) marks += `<circle class="pt ${s.cls} ${s.mark && s.mark.has(i) ? 'hl' : ''}" cx="${X(i)}" cy="${Y(y)}" r="${s.mark && s.mark.has(i) ? 4.5 : 3}"><title>${f(y, 2)}</title></circle>`; });
+      }
+    });
+    (ch.hlines || []).forEach(h => { marks += `<line class="hl ${h.cls}" x1="${L}" x2="${W - R}" y1="${Y(h.y)}" y2="${Y(h.y)}"/><text class="hl-t ${h.cls}" x="${W - R - 4}" y="${Y(h.y) - 5}" text-anchor="end">${esc(h.name)} ${fmtTick(h.y)}</text>`; });
+    const legend = ch.series.map(s => `<span class="lg"><i class="sw ${s.cls}"></i>${esc(s.name)}</span>`).join('') + (ch.hlines || []).filter((h, i, a) => a.findIndex(x => x.cls === h.cls) === i).map(h => `<span class="lg"><i class="sw ${h.cls} dash"></i>${esc(h.name.replace(/^[+−-]/, ''))}</span>`).join('');
+    return `<div class="legend">${legend}</div><div class="svg-wrap"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Grafik ${esc(ch.yLabel)} terhadap ${esc(ch.xLabel)}">${g}${marks}</svg></div>`;
+  }
+  function niceTicks(lo, hi, n) {
+    const span = hi - lo, step0 = span / n, mag = Math.pow(10, Math.floor(Math.log10(step0)));
+    const step = [1, 2, 2.5, 5, 10].map(k => k * mag).find(s => s >= step0);
+    const out = []; for (let v = Math.floor(lo / step) * step; v <= hi + step * 0.5; v += step) out.push(+v.toFixed(10));
+    return out;
+  }
+  const fmtTick = v => Math.abs(v) >= 1000 ? Math.round(v).toLocaleString('en') : (+v.toFixed(2)).toString();
+
+  /* ----- Ringkasan & laporan ----- */
+  function renderSummary() {
+    const t = S.tank;
+    const all = M.map(m => ({ m, r: run(m) }));
+    $('#main').innerHTML = `
+      ${sampleBanner()}
+      <header class="page-h"><p class="eyebrow">Laporan</p><h1>Ringkasan evaluasi ${esc(t.tag || '')}</h1>
+      <p class="lead">${esc(t.name || '')}${t.service ? ' · ' + esc(t.service) : ''} · D ${f(+t.D)} m · H shell ${f(+t.Hs)} m · cairan maks. ${f(+t.HL)} m · G ${f(+t.G, 2)}</p>
+      <div class="row-btns no-print">
+        <label class="chk"><input type="checkbox" id="sm-only"> Tampilkan hanya yang perlu perhatian</label>
+        ${inFrame ? '' : '<button class="btn" id="sm-print">Cetak / simpan PDF</button>'}
+        <button class="btn ghost" id="sm-copy">Salin ringkasan (teks)</button>
+      </div></header>
+      <div id="sm-body">${all.map(({ m, r }) => `
+        <section class="rep st-${r.status}" data-st="${r.status}">
+          <div class="rep-h"><a href="#${m.id}" class="code">${m.id}</a><h2>${esc(m.title)}</h2><b class="pill st-${r.status}">${STATUS_TXT[r.status]}</b></div>
+          <p class="muted small">${m.refs.map(esc).join(' · ')}</p>
+          ${resultsHtml(r, true)}
+        </section>`).join('')}</div>`;
+    $('#sm-only').onchange = e => document.querySelectorAll('.rep').forEach(s => { s.hidden = e.target.checked && !['fail', 'warn'].includes(s.dataset.st); });
+    const p = $('#sm-print'); if (p) p.onclick = () => window.print();
+    $('#sm-copy').onclick = () => {
+      const lines = [`RINGKASAN EVALUASI TANGKI ${t.tag || ''} — ${t.name || ''}`, `D ${t.D} m, H ${t.Hs} m, HL ${t.HL} m, G ${t.G}`, ''];
+      all.forEach(({ m, r }) => {
+        lines.push(`[${m.id}] ${m.title} — ${STATUS_TXT[r.status]}`);
+        (r.checks || []).filter(c => c.ok === false || c.ok === 'warn').forEach(c => lines.push(`   ${okTxt(c.ok)}: ${c.l} | terukur ${c.meas ?? '-'} ${c.u || ''} | kriteria ${c.lim ?? '-'} (${c.ref || ''})`));
+      });
+      copyText(lines.join('\n'));
+    };
+  }
+
+  /* ---------- util ---------- */
+  function changed(m) {
+    save();
+    if (m && $('#m-res')) renderResults(m);
+    renderNav($('#q').value);
+    const tg = $('#tank-tag'); if (tg) tg.textContent = S.tank.tag ? S.tank.tag : 'Tanpa tag';
+  }
+  function toast(msg) {
+    const t = $('#toast'); t.textContent = msg; t.hidden = false;
+    clearTimeout(t._t); t._t = setTimeout(() => { t.hidden = true; }, 2600);
+  }
+  function confirmInline(btn, q, fn) {
+    if (btn.dataset.armed) { delete btn.dataset.armed; btn.textContent = btn.dataset.orig; fn(); return; }
+    btn.dataset.orig = btn.textContent; btn.dataset.armed = '1'; btn.textContent = q + ' Klik lagi';
+    btn.classList.add('armed');
+    setTimeout(() => { if (btn.isConnected && btn.dataset.armed) { delete btn.dataset.armed; btn.textContent = btn.dataset.orig; btn.classList.remove('armed'); } }, 4000);
+  }
+  function copyText(txt) {
+    const done = () => toast('Disalin ke clipboard.');
+    try {
+      navigator.clipboard.writeText(txt).then(done, () => fallback());
+    } catch (e) { fallback(); }
+    function fallback() {
+      const ta = document.createElement('textarea'); ta.value = txt; ta.className = 'copy-fb'; document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); done(); } catch (e) { toast('Pilih teks lalu salin manual.'); }
+    }
+  }
+
+  /* ---------- Proyek: simpan / buka file ---------- */
+  function bindTop() {
+    $('#q').addEventListener('input', e => renderNav(e.target.value));
+    $('#menu').onclick = () => document.body.classList.toggle('nav-open');
+    $('#btn-export').onclick = () => {
+      const txt = JSON.stringify({ app: 'toolkit-tangki', v: 1, ...S }, null, 1);
+      if (inFrame) { copyText(txt); return; }
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([txt], { type: 'application/json' }));
+      a.download = (S.tank.tag || 'tangki').replace(/[^\w-]+/g, '_') + '.tangki.json';
+      a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    };
+    if (inFrame) $('#btn-export').textContent = 'Salin proyek (JSON)';
+    $('#btn-import').onclick = () => $('#file').click();
+    $('#file').onchange = e => {
+      const fl = e.target.files[0]; if (!fl) return;
+      const rd = new FileReader();
+      rd.onload = () => {
+        try { const d = JSON.parse(rd.result); S = { tank: d.tank, mods: d.mods || {}, sample: false }; changed(); route(); toast('Proyek dibuka: ' + (S.tank.tag || fl.name)); }
+        catch (err) { toast('File tidak bisa dibaca: bukan file proyek Toolkit Tangki.'); }
+      };
+      rd.readAsText(fl); e.target.value = '';
+    };
+  }
+
+  window.addEventListener('hashchange', route);
+  document.addEventListener('click', e => {
+    if (e.target.closest('[data-close-banner]')) { S.sample = false; save(); document.querySelectorAll('.banner').forEach(b => b.remove()); }
+  });
+  function boot() {
+    bindTop();
+    $('#tank-tag').textContent = S.tank.tag || 'Tanpa tag';
+    renderNav();
+    route();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+  // ekspos untuk pengujian
+  window.TKApp = { run, byId };
+})();
+</script>
+</body>
+</html>
