@@ -87,3 +87,8 @@ tools/build.js bundel satu file: node tools/build.js
 ```
 
 Menambah modul baru cukup dengan satu blok `add({...})` di `js/modules.js`.
+
+## Versi online (GitHub Pages)
+
+Setelah GitHub Pages aktif (Settings → Pages → Deploy from a branch → `main` / `(root)`), aplikasi bisa dibuka di
+https://harapan-ferdinand.github.io/toolkit-tangki/
