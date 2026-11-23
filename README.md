@@ -12,7 +12,15 @@ tanpa server dan tanpa instalasi.
 - Data tersimpan otomatis di browser. Gunakan **Simpan proyek** / **Buka proyek** untuk file `.tangki.json`
   per tangki (bisa diarsipkan atau dibagikan ke rekan).
 - Tabel bisa diisi dengan **copy-paste dari Excel**: klik sel pertama lalu Ctrl+V.
-- **Ringkasan** menampilkan hasil semua modul, filter "perlu perhatian", cetak/PDF, dan salin teks temuan.
+- **Ringkasan** menampilkan hasil semua modul, filter "perlu perhatian", dan salin teks temuan.
+- **Laporan & Ekspor** menyusun laporan siap cetak (sampul + gambar tangki, ringkasan, daftar temuan,
+  detail per modul dengan input, pemeriksaan, grafik, dan kolom pengesahan):
+  - **PDF**: tombol *Cetak / simpan PDF* → pilih tujuan *Save as PDF*, kertas A4.
+  - **Excel (.xlsx)**: sheet *Ringkasan*, *Semua pemeriksaan* (dengan filter), *Data tangki*, dan satu sheet per modul.
+    File dibuat langsung di browser, tidak butuh internet.
+- **Visualisasi konfigurasi**: gambar tampak samping tangki (course, cairan, roof, annular, dimensi) di Data Tangki,
+  SH-01 dan SH-04 dengan warna status per course; tampak atas (polar) untuk plumbness, roundness, kerataan
+  foundation, dan settlement.
 
 ## Klasifikasi
 
@@ -80,6 +88,9 @@ otomatis (1 in = 25.4 mm, 1 ft = 0.3048 m). Untuk settlement (ST-01/02), Y dan E
 ```
 js/data.js     tabel referensi (material, toleransi, kurva)
 js/calc.js     fungsi perhitungan murni (bisa diuji di Node)
+js/viz.js      gambar tangki (tampak samping) dan diagram polar (tampak atas)
+js/report.js   halaman Laporan: cetak PDF & ekspor Excel
+js/xlsx-lite.js penulis file .xlsx tanpa library luar
 js/modules.js  definisi modul: klasifikasi, parameter, input, kriteria
 js/app.js      antarmuka
 tests/run.js   uji perhitungan: node tests/run.js

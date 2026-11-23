@@ -284,10 +284,105 @@ svg .hl-t.lim { fill: var(--fail); } svg .hl-t.lim2 { fill: var(--warn); }
   .tr .chips, .tr .refs { grid-column: 1 / -1; }
   .tr.th { display: none; }
 }
+
+/* ---------- Visualisasi konfigurasi ---------- */
+.viz-t { font-family: var(--f-head); font-weight: 600; font-size: 0.98rem; }
+.tk-svg, .pl-svg { min-width: 360px; }
+.pl-svg { max-width: 560px; margin: 0 auto; }
+.tk-svg .tk-found { fill: var(--surface-2); stroke: var(--muted); stroke-width: 1; }
+.tk-svg .tk-ground { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 2 3; }
+.tk-svg .tk-liq { fill: var(--s1); fill-opacity: 0.12; }
+.tk-svg .tk-liq-l { stroke: var(--s1); stroke-width: 1.5; stroke-dasharray: 6 4; }
+.tk-svg .tk-liq-m { fill: var(--s1); }
+.tk-svg .tk-deck, .tk-svg .tk-pont { fill: var(--surface-2); stroke: var(--ink); stroke-width: 1; }
+.tk-svg .tk-shell { stroke: none; }
+.tk-svg .tk-pass, .sw.tk-pass { fill: var(--pass); background: var(--pass); }
+.tk-svg .tk-warn, .sw.tk-warn { fill: var(--warn); background: var(--warn); }
+.tk-svg .tk-fail, .sw.tk-fail { fill: var(--fail); background: var(--fail); }
+.tk-svg .tk-na, .sw.tk-na { fill: var(--muted); background: var(--muted); }
+.tk-svg .tk-seam { stroke: var(--surface); stroke-width: 1.5; }
+.tk-svg .tk-roof { fill: var(--surface-2); stroke: var(--ink); stroke-width: 1.5; }
+.tk-svg .tk-girder { stroke: var(--ink); stroke-width: 3; }
+.tk-svg .tk-bottom { stroke: var(--ink); stroke-width: 3; }
+.tk-svg .tk-ann { stroke: var(--s2); stroke-width: 5; }
+.tk-svg .tk-dim, .tk-svg .tk-ext, .tk-svg .tk-lead { stroke: var(--muted); stroke-width: 1; fill: none; }
+.tk-svg .tk-lead { stroke-dasharray: 2 2; }
+.tk-svg .tk-arrow { fill: var(--muted); }
+.tk-svg .tk-t { fill: var(--ink); font: 11.5px var(--f-mono); }
+.tk-svg .tk-liq-t { fill: var(--s1); }
+.tk-svg .tk-dim-t { fill: var(--muted); }
+.pl-svg .pl-base { fill: none; stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 3 3; }
+.pl-svg .pl-band { fill: none; stroke: var(--fail); stroke-width: 1.2; stroke-dasharray: 6 4; }
+.pl-svg .pl-ax { stroke: var(--line); stroke-width: 1; }
+.pl-svg .pl-poly { fill: var(--s1); fill-opacity: 0.14; stroke: var(--s1); stroke-width: 2; }
+.pl-svg .pl-pt { fill: var(--s1); stroke: var(--surface); stroke-width: 1.5; }
+.pl-svg .pl-pt.bad { fill: var(--fail); }
+.pl-svg .pl-lb { fill: var(--muted); font: 11px var(--f-mono); }
+.pl-svg .pl-lb.bad { fill: var(--fail); font-weight: 600; }
+.pl-svg .pl-c { fill: var(--muted); font: 12px var(--f-body); }
+.pl-svg .pl-c.sm { font-size: 10px; }
+.sw.ring { background: none; border: 1.5px dashed var(--muted); border-radius: 50%; width: 10px; height: 10px; }
+textarea { font: inherit; color: var(--ink); background: var(--surface-2); border: 1px solid var(--line); border-radius: 4px; padding: 7px 9px; width: 100%; resize: vertical; }
+
+/* ---------- Laporan ---------- */
+.rp-set { display: flex; flex-direction: column; gap: 14px; }
+.rp-opts { gap: 6px; }
+.report-doc { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: clamp(16px, 3vw, 36px); display: flex; flex-direction: column; gap: 26px; min-width: 0; }
+.rd-cover { display: flex; flex-direction: column; gap: 16px; padding-bottom: 18px; border-bottom: 2px solid var(--ink); }
+.rd-title h1 { font-size: 1.7rem; }
+.rd-title p { margin: 4px 0 0; }
+.rd-two { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+table.kv { font-size: 0.86rem; }
+table.kv th { text-align: left; font-weight: 500; color: var(--muted); padding: 4px 10px 4px 0; width: 46%; vertical-align: top; }
+table.kv td { padding: 4px 0; border-bottom: 1px solid var(--line); }
+table.kv.sm { max-width: 560px; }
+caption { text-align: left; font-family: var(--f-head); font-weight: 600; padding-bottom: 6px; }
+.rd-fig { border: 1px solid var(--line); border-radius: var(--r); padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.rd-sec { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.rd-sec h2 { font-size: 1.2rem; }
+.rd-sec p { margin: 0; }
+.rd-tbl { font-size: 0.84rem; }
+.rd-tbl th { text-align: left; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); padding: 7px 8px; border-bottom: 1.5px solid var(--ink); }
+.rd-tbl td.code { white-space: nowrap; }
+.rd-tbl td { padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.rd-tbl.sm td { font-family: var(--f-mono); font-size: 0.78rem; padding: 3px 8px; }
+.rd-mod { padding-top: 18px; border-top: 1px solid var(--line); }
+.rd-mh { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.rd-mh h2 { flex: 1 1 auto; }
+.rd-mh .code { color: var(--accent); }
+.rd-in { display: flex; flex-direction: column; gap: 12px; }
+.rd-res { display: flex; flex-direction: column; gap: 10px; }
+.rd-res .verdict { display: none; }
+.rd-res .tile { background: var(--surface-2); }
+.rd-notes { white-space: normal; }
+.st-txt.pass { color: var(--pass); } .st-txt.warn { color: var(--warn); } .st-txt.fail { color: var(--fail); }
+.sign { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+.sign > div { display: flex; flex-direction: column; gap: 4px; }
+.sline { height: 64px; border-bottom: 1px solid var(--ink); }
+@media (max-width: 520px) { .sign { grid-template-columns: 1fr; } }
+
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 
+@page { size: A4; margin: 14mm 12mm; }
 @media print {
-  .topbar, .side, .no-print, .banner, .crumb { display: none !important; }
+  :root, :root[data-theme="dark"], :root:not([data-theme="light"]) {
+    --bg: #fff; --surface: #fff; --surface-2: #f3f5f6; --ink: #111; --muted: #555; --line: #c9d1d5;
+    --accent: #0e6a78; --accent-soft: #e3f1f3; --pass: #1c7a45; --pass-bg: #e2f3e9; --warn: #9a5b00; --warn-bg: #fbefd8;
+    --fail: #b3261e; --fail-bg: #fbe3e0; --na: #555; --na-bg: #eceff1; --s1: #0e6a78; --s2: #c2701c; color-scheme: light;
+  }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .topbar, .side, .no-print, .banner, .crumb, .toast { display: none !important; }
+  .report-doc { border: 0; padding: 0; gap: 18px; }
+  .rd-mod { break-before: page; border-top: 0; padding-top: 0; }
+  .rd-sign { break-inside: avoid; }
+  .rd-cover { break-after: page; }
+  .rd-fig, .chart-card, table.kv, .tiles, tr { break-inside: avoid; }
+  svg { min-width: 0 !important; max-height: 88mm; }
+  .tbl-wrap, .svg-wrap { overflow: visible; }
+  table.out th, table.checks th, .rd-tbl th { white-space: normal; font-size: 7pt; padding: 5px 6px; }
+  table.out td, table.checks td, .rd-tbl td { font-size: 8pt; padding: 4px 6px; }
+  table.out td.num { white-space: normal; font-size: 8pt; }
+  .card { box-shadow: none; }
   .layout { display: block; }
   main { padding: 0; max-width: none; }
   body { background: #fff; color: #000; font-size: 11pt; }
@@ -305,6 +400,7 @@ svg .hl-t.lim { fill: var(--fail); } svg .hl-t.lim2 { fill: var(--warn); }
     <a class="top-link" href="#beranda">Klasifikasi</a>
     <a class="top-link" href="#tangki">Data Tangki</a>
     <a class="top-link" href="#ringkasan">Ringkasan</a>
+    <a class="top-link" href="#laporan">Laporan &amp; Ekspor</a>
   </nav>
   <div class="top-act">
     <button class="btn ghost sm" id="btn-import">Buka proyek</button>
@@ -314,7 +410,7 @@ svg .hl-t.lim { fill: var(--fail); } svg .hl-t.lim2 { fill: var(--warn); }
 </header>
 <div class="layout">
   <aside class="side" aria-label="Navigasi modul">
-    <nav class="side-links"><a class="top-link" href="#beranda">Klasifikasi</a><a class="top-link" href="#tangki">Data Tangki</a><a class="top-link" href="#ringkasan">Ringkasan</a><button class="btn ghost sm" type="button" onclick="document.getElementById('file').click()">Buka proyek</button></nav>
+    <nav class="side-links"><a class="top-link" href="#beranda">Klasifikasi</a><a class="top-link" href="#tangki">Data Tangki</a><a class="top-link" href="#ringkasan">Ringkasan</a><a class="top-link" href="#laporan">Laporan &amp; Ekspor</a><button class="btn ghost sm" type="button" onclick="document.getElementById('file').click()">Buka proyek</button></nav>
     <label class="search"><span class="sr">Cari modul atau parameter</span><input id="q" type="search" placeholder="Cari: plumbness, annular, 4.4.5…"></label>
     <div id="nav"></div>
     <p class="side-foot">Referensi: API Std 653 5th Ed. (2014), API Std 650 (2020). Hasil bersifat alat bantu engineering; keputusan akhir tetap oleh inspector / engineer berwenang.</p>
@@ -794,6 +890,136 @@ svg .hl-t.lim { fill: var(--fail); } svg .hl-t.lim2 { fill: var(--warn); }
 })(typeof window !== 'undefined' ? window : globalThis);
 </script>
 <script>
+/* Toolkit Tangki — visualisasi konfigurasi (SVG murni, mengikuti token warna tema).
+ *  TKViz.tank(spec)  : tampak samping tangki (course, cairan, roof, bottom, dimensi)
+ *  TKViz.polar(spec) : tampak atas, deviasi per stasiun keliling + pita toleransi
+ */
+(function (root) {
+  const V = {};
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const n2 = (x, d = 2) => Number.isFinite(x) ? x.toFixed(d) : '–';
+
+  /* spec: { D, Hs, HL, roof: 'fixed'|'open', courses:[{w (mm), t (mm), ok, label}], title } */
+  V.tank = function (spec) {
+    const cs = (spec.courses || []).filter(c => Number.isFinite(c.w) && c.w > 0);
+    const D = spec.D > 0 ? spec.D : 10;
+    const Hc = cs.reduce((a, c) => a + c.w, 0) / 1000;
+    const H = Hc > 0 ? Hc : (spec.Hs > 0 ? spec.Hs : 10);
+    const W = 740, padL = 92, padR = 230, padT = 44, padB = 70;
+    const maxW = W - padL - padR, maxH = 300;
+    const s = Math.min(maxW / D, maxH / H);
+    const tw = D * s, th = H * s;
+    const x0 = padL + (maxW - tw) / 2, x1 = x0 + tw;
+    const roofRise = spec.roof === 'open' ? 0 : Math.max(tw * 0.07, 12);
+    const yTop = padT + roofRise, yBot = yTop + th;
+    const SVGH = yBot + padB;
+    let g = '';
+    // tanah / foundation
+    g += `<rect class="tk-found" x="${x0 - 26}" y="${yBot + 3}" width="${tw + 52}" height="12" rx="1"/>`;
+    g += `<line class="tk-ground" x1="${x0 - 60}" x2="${x1 + 60}" y1="${yBot + 15}" y2="${yBot + 15}"/>`;
+    // cairan
+    if (spec.HL > 0) {
+      const yL = yBot - Math.min(spec.HL, H) * s;
+      g += `<rect class="tk-liq" x="${x0}" y="${yL}" width="${tw}" height="${yBot - yL}"/>`;
+      g += `<line class="tk-liq-l" x1="${x0}" x2="${x1}" y1="${yL}" y2="${yL}"/>`;
+      g += `<path class="tk-liq-m" d="M${x0 + 14} ${yL - 9} l6 8 l6 -8 z"/>`;
+      g += `<text class="tk-t tk-liq-t" x="${x0 + 30}" y="${yL - yTop < 16 ? yL + 14 : yL - 3}">HL ${n2(spec.HL)} m</text>`;
+      if (spec.roof === 'open') {
+        const yd = yL - 6;
+        g += `<rect class="tk-deck" x="${x0 + 4}" y="${yd - 7}" width="${tw - 8}" height="7"/>`;
+        g += `<rect class="tk-pont" x="${x0 + 4}" y="${yd - 12}" width="${Math.min(tw * 0.12, 40)}" height="12"/><rect class="tk-pont" x="${x1 - 4 - Math.min(tw * 0.12, 40)}" y="${yd - 12}" width="${Math.min(tw * 0.12, 40)}" height="12"/>`;
+        g += `<text class="tk-t" x="${(x0 + x1) / 2}" y="${yd - 16}" text-anchor="middle">floating roof</text>`;
+      }
+    }
+    // course shell
+    let y = yBot;
+    const lblX = x1 + 16;
+    cs.forEach((c, i) => {
+      const h = c.w / 1000 * s;
+      const cls = c.ok === true ? 'pass' : c.ok === false ? 'fail' : c.ok === 'warn' ? 'warn' : 'na';
+      const thick = Math.max(7, Math.min(13, (c.t || 6) * 0.6));
+      g += `<rect class="tk-shell tk-${cls}" x="${x0 - thick}" y="${y - h}" width="${thick}" height="${h}"/>`;
+      g += `<rect class="tk-shell tk-${cls}" x="${x1}" y="${y - h}" width="${thick}" height="${h}"/>`;
+      g += `<line class="tk-seam" x1="${x0 - thick}" x2="${x0}" y1="${y - h}" y2="${y - h}"/><line class="tk-seam" x1="${x1}" x2="${x1 + thick}" y1="${y - h}" y2="${y - h}"/>`;
+      if (h >= 13) {
+        g += `<rect class="tk-${cls}" x="${lblX}" y="${y - h / 2 - 5}" width="10" height="10" rx="2"/>`;
+        g += `<text class="tk-t tk-c" x="${lblX + 15}" y="${y - h / 2 + 4}">C${i + 1} · t ${n2(c.t, 1)} mm${c.label ? ' · ' + esc(c.label) : ''}</text>`;
+        g += `<line class="tk-lead" x1="${x1 + thick + 2}" x2="${lblX - 4}" y1="${y - h / 2}" y2="${y - h / 2}"/>`;
+      }
+      y -= h;
+    });
+    // roof
+    if (spec.roof !== 'open') {
+      g += `<path class="tk-roof" d="M${x0 - 6} ${yTop} L${(x0 + x1) / 2} ${yTop - roofRise} L${x1 + 6} ${yTop} Z"/>`;
+      g += `<text class="tk-t" x="${(x0 + x1) / 2}" y="${yTop - roofRise - 7}" text-anchor="middle">fixed roof</text>`;
+    } else {
+      g += `<line class="tk-girder" x1="${x0 - 14}" x2="${x0}" y1="${yTop + 6}" y2="${yTop + 6}"/><line class="tk-girder" x1="${x1}" x2="${x1 + 14}" y1="${yTop + 6}" y2="${yTop + 6}"/>`;
+    }
+    // bottom + annular
+    g += `<line class="tk-bottom" x1="${x0 - 8}" x2="${x1 + 8}" y1="${yBot + 1.5}" y2="${yBot + 1.5}"/>`;
+    g += `<line class="tk-ann" x1="${x0 - 8}" x2="${x0 + Math.min(tw * 0.08, 30)}" y1="${yBot + 1.5}" y2="${yBot + 1.5}"/><line class="tk-ann" x1="${x1 - Math.min(tw * 0.08, 30)}" x2="${x1 + 8}" y1="${yBot + 1.5}" y2="${yBot + 1.5}"/>`;
+    // dimensi D
+    const yd = yBot + 40;
+    g += `<line class="tk-dim" x1="${x0}" x2="${x1}" y1="${yd}" y2="${yd}" marker-start="url(#tkA)" marker-end="url(#tkA)"/>`;
+    g += `<line class="tk-ext" x1="${x0}" x2="${x0}" y1="${yBot + 18}" y2="${yd + 6}"/><line class="tk-ext" x1="${x1}" x2="${x1}" y1="${yBot + 18}" y2="${yd + 6}"/>`;
+    g += `<text class="tk-t tk-dim-t" x="${(x0 + x1) / 2}" y="${yd - 6}" text-anchor="middle">D = ${n2(D)} m</text>`;
+    // dimensi H
+    const xd = x0 - 42;
+    g += `<line class="tk-dim" x1="${xd}" x2="${xd}" y1="${yTop}" y2="${yBot}" marker-start="url(#tkA)" marker-end="url(#tkA)"/>`;
+    g += `<line class="tk-ext" x1="${xd - 6}" x2="${x0 - 12}" y1="${yTop}" y2="${yTop}"/>`;
+    g += `<text class="tk-t tk-dim-t" x="${xd - 8}" y="${(yTop + yBot) / 2}" text-anchor="middle" transform="rotate(-90 ${xd - 8} ${(yTop + yBot) / 2})">H = ${n2(H)} m</text>`;
+    const legend = [['pass', 'memenuhi'], ['warn', 'cek'], ['fail', 'tidak memenuhi'], ['na', 'tanpa evaluasi']]
+      .filter(([k]) => cs.some(c => (c.ok === true ? 'pass' : c.ok === false ? 'fail' : c.ok === 'warn' ? 'warn' : 'na') === k));
+    const showLeg = cs.some(c => c.ok != null);
+    return `${spec.title ? `<div class="viz-t">${esc(spec.title)}</div>` : ''}
+      ${showLeg ? `<div class="legend">${legend.map(([k, l]) => `<span class="lg"><i class="sw tk-${k}"></i>${l}</span>`).join('')}</div>` : ''}
+      <div class="svg-wrap"><svg class="tk-svg" viewBox="0 0 ${W} ${SVGH}" role="img" aria-label="Tampak samping tangki D ${n2(D)} m, H ${n2(H)} m, ${cs.length} course">
+      <defs><marker id="tkA" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="tk-arrow" d="M0 1 L9 5 L0 9 z"/></marker></defs>${g}</svg></div>`;
+  };
+
+  /* spec: { labels:[], angles:[deg]|null, values:[mm], tol:number, unit, title, valueName } */
+  V.polar = function (spec) {
+    const n = spec.values.length;
+    if (!n) return '';
+    const ang = spec.angles && spec.angles.every(Number.isFinite) ? spec.angles : spec.values.map((_, i) => 360 * i / n);
+    const W = 520, Hh = 440, cx = W / 2, cy = Hh / 2, R0 = 112, span = 58;
+    const maxAbs = Math.max(...spec.values.filter(Number.isFinite).map(Math.abs), spec.tol || 0, 1e-9);
+    const k = span / maxAbs;
+    const P = (deg, r) => { const t = deg * Math.PI / 180; return [cx + r * Math.sin(t), cy - r * Math.cos(t)]; };
+    let g = '';
+    g += `<circle class="pl-base" cx="${cx}" cy="${cy}" r="${R0}"/>`;
+    if (spec.tol) {
+      g += `<circle class="pl-band" cx="${cx}" cy="${cy}" r="${R0 + k * spec.tol}"/><circle class="pl-band" cx="${cx}" cy="${cy}" r="${Math.max(R0 - k * spec.tol, 4)}"/>`;
+    }
+    for (let a = 0; a < 360; a += 45) { const [x, y] = P(a, R0 + span + 22); const [x2, y2] = P(a, R0 - span - 6); g += `<line class="pl-ax" x1="${x2}" y1="${y2}" x2="${x}" y2="${y}"/>`; }
+    const pts = spec.values.map((v, i) => Number.isFinite(v) ? P(ang[i], R0 + k * v) : null).filter(Boolean);
+    if (pts.length > 2) g += `<polygon class="pl-poly" points="${pts.map(p => p.map(z => z.toFixed(1)).join(',')).join(' ')}"/>`;
+    spec.values.forEach((v, i) => {
+      if (!Number.isFinite(v)) return;
+      const [x, y] = P(ang[i], R0 + k * v);
+      const bad = spec.tol && Math.abs(v) > spec.tol + 1e-9;
+      g += `<circle class="pl-pt ${bad ? 'bad' : ''}" cx="${x}" cy="${y}" r="${bad ? 5 : 4}"><title>${esc(spec.labels ? spec.labels[i] : i + 1)}: ${n2(v, 1)} ${esc(spec.unit || '')}</title></circle>`;
+      const [lx, ly] = P(ang[i], R0 + span + 30);
+      if (n <= 24 || i % Math.ceil(n / 24) === 0) g += `<text class="pl-lb ${bad ? 'bad' : ''}" x="${lx}" y="${ly + 4}" text-anchor="middle">${esc(spec.labels ? spec.labels[i] : i + 1)}</text>`;
+    });
+    g += `<text class="pl-c" x="${cx}" y="${cy - 4}" text-anchor="middle">${esc(spec.center || 'nominal')}</text>`;
+    g += `<text class="pl-c sm" x="${cx}" y="${cy + 12}" text-anchor="middle">skala deviasi diperbesar</text>`;
+    return `${spec.title ? `<div class="viz-t">${esc(spec.title)}</div>` : ''}
+      <div class="legend"><span class="lg"><i class="sw s1"></i>${esc(spec.valueName || 'Deviasi')}</span>${spec.tol ? `<span class="lg"><i class="sw lim dash"></i>Batas ± ${n2(spec.tol, 1)} ${esc(spec.unit || '')}</span>` : ''}<span class="lg"><i class="sw ring"></i>Lingkaran nominal</span></div>
+      <div class="svg-wrap"><svg class="pl-svg" viewBox="0 0 ${W} ${Hh}" role="img" aria-label="Tampak atas deviasi ${n} stasiun">${g}</svg></div>`;
+  };
+
+  /* Ambil sudut dari label "45°" bila ada */
+  V.anglesFrom = labels => {
+    const a = labels.map(l => { const m = String(l).match(/(-?\d+(?:\.\d+)?)\s*°/); return m ? +m[1] : NaN; });
+    return a.every(Number.isFinite) ? a : null;
+  };
+
+  root.TKViz = V;
+  if (typeof module !== 'undefined') module.exports = V;
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
 /* Toolkit Tangki — definisi modul (klasifikasi, parameter yang ditinjau, input, perhitungan).
  * Setiap modul: { id, cat, comp, title, refs, params, fields, table, compute(v) }.
  * compute menerima nilai field (sudah di-map) dan baris tabel, mengembalikan
@@ -902,6 +1128,10 @@ svg .hl-t.lim { fill: var(--fail); } svg .hl-t.lim2 { fill: var(--warn); }
         ],
         checks,
         table: { head: ['Course', 'Elev. dasar (m)', 'H (m)', 'S (psi)', 'tmin (mm)', 't akt. (mm)', 'CR (mm/th)', 'Sisa umur (th)', 'Level Ht (m)', 'Status'], rows: trows },
+        charts: [{
+          type: 'tank', title: 'Konfigurasi shell — status per course', D: v.D, HL: v.HL,
+          courses: res.rows.map((r, i) => ({ w: rows[i].w, t: r.tAct, ok: r.aboveLiquid ? null : r.tAct >= r.tminMm + (v.CAn || 0), label: r.aboveLiquid ? 'di atas cairan' : 'tmin ' + f(r.tminMm + (v.CAn || 0)) }))
+        }],
         chart: {
           type: 'bars', xLabel: 'Course', yLabel: 'mm',
           cats: res.rows.map(r => 'C' + r.n),
@@ -1039,6 +1269,7 @@ svg .hl-t.lim { fill: var(--fail); } svg .hl-t.lim2 { fill: var(--warn); }
         summary: [{ l: 'Tebal nominal minimum (5.6.1.1)', v: tMinTab, u: 'mm' }, { l: 'Tinggi shell dari tabel', v: f(z), u: 'm' }],
         checks,
         table: { head: ['Course', 'H (m)', 'td (mm)', 'tt (mm)', 't min tabel', 't syarat (mm)', 't terpasang', 'Status'], rows: trows },
+        charts: [{ type: 'tank', title: 'Konfigurasi shell — tebal terpasang vs syarat', D: v.D, HL: v.HL, courses: rows.map((r, i) => ({ w: r.w, t: num(r.tNom) ? r.tNom : yreq[i], ok: num(r.tNom) ? r.tNom >= yreq[i] - 1e-9 : null, label: 'syarat ' + f(yreq[i]) })) }],
         chart: { type: 'bars', xLabel: 'Course', yLabel: 'mm', cats: rows.map((_, i) => 'C' + (i + 1)), series: [{ name: 't terpasang', y: ys, cls: 's1' }, { name: 't syarat', y: yreq, cls: 'lim', line: true }] },
         notes: v.D > 61 ? ['⚠ D > 61 m: 1-foot method tidak boleh dipakai (5.6.3.1), gunakan variable-design-point.'] : ['Untuk 3.2 m < D < 15 m, course terbawah minimal 6 mm (Note 4).']
       };
@@ -1419,6 +1650,7 @@ svg .hl-t.lim { fill: var(--fail); } svg .hl-t.lim2 { fill: var(--warn); }
       return {
         summary: [{ l: 'Batas out-of-plumb', v: f(lim, 1), u: 'mm', s: v.basis === '650' ? 'H/200' : 'H/100, maks. 127 mm' }, { l: 'Simpangan maks.', v: f(st.max, 1), u: 'mm' }],
         checks,
+        charts: [{ type: 'polar', title: 'Tampak atas — arah & besar simpangan puncak', labels: pts.map(r => r.id), angles: root.TKViz && root.TKViz.anglesFrom(pts.map(r => r.id)), values: pts.map(r => r.d), tol: lim, unit: 'mm', valueName: 'Simpangan (+ keluar)', center: 'H ' + f(v.H) + ' m' }],
         chart: { type: 'bars', xLabel: 'Stasiun', yLabel: 'mm', cats: pts.map(r => r.id), series: [{ name: 'Simpangan', y: pts.map(r => r.d), cls: 's1' }], hlines: [{ y: lim, name: '+batas', cls: 'lim' }, { y: -lim, name: '−batas', cls: 'lim' }] },
         notes: ['Out-of-plumbness per course juga tidak boleh melebihi toleransi flatness/waviness ASTM A6/A20/A480.', 'Untuk tangki IFR berlaku juga Annex H (H.4.1.1), ambil yang lebih ketat.', 'Ukur sebelum hydrotest (7.5.1 / 10.5.1.2).']
       };
@@ -1456,6 +1688,7 @@ svg .hl-t.lim { fill: var(--fail); } svg .hl-t.lim2 { fill: var(--warn); }
       return {
         summary: [{ l: 'Radius nominal', v: f(Rn, 0), u: 'mm' }, { l: 'Toleransi', v: '± ' + f(tol, 1), u: 'mm', s: high && v.basis === '653' ? '3× Table 10.2' : '' }, { l: 'Ovality (Rmaks − Rmin)', v: f(st.max - st.min, 1), u: 'mm' }],
         checks,
+        charts: [{ type: 'polar', title: 'Tampak atas — profil radius terukur', labels: pts.map(r => r.id), angles: root.TKViz && root.TKViz.anglesFrom(pts.map(r => r.id)), values: dev, tol, unit: 'mm', valueName: 'R − Rnom', center: 'R ' + f(Rn / 1000, 3) + ' m' }],
         chart: { type: 'bars', xLabel: 'Stasiun', yLabel: 'mm', cats: pts.map(r => r.id), series: [{ name: 'R − Rnom', y: dev, cls: 's1' }], hlines: [{ y: tol, name: '+tol', cls: 'lim' }, { y: -tol, name: '−tol', cls: 'lim' }] },
         notes: notes.concat(['Ovality akibat settlement dapat mengganggu floating roof (653 B.3.2.3).'])
       };
@@ -1586,6 +1819,7 @@ svg .hl-t.lim { fill: var(--fail); } svg .hl-t.lim2 { fill: var(--warn); }
       return {
         summary: [{ l: 'Elevasi rata-rata', v: f(avg, 1), u: 'mm' }, { l: 'Jarak antar titik', v: f(sp, 2), u: 'm' }, { l: 'Deviasi lokal terbesar', v: f(worst, 1), u: 'mm', s: 'mulai titik ' + (at + 1) }],
         checks,
+        charts: [{ type: 'polar', title: 'Tampak atas — elevasi foundation terhadap rata-rata', labels: e.map((_, i) => i + 1), values: dev, tol: totLim, unit: 'mm', valueName: 'Deviasi elevasi', center: 'rata-rata' }],
         chart: { type: 'line', xLabel: 'Titik', yLabel: 'mm dari rata-rata', x: e.map((_, i) => i + 1), series: [{ name: 'Deviasi', y: dev, cls: 's1' }], hlines: [{ y: totLim, name: '+batas', cls: 'lim' }, { y: -totLim, name: '−batas', cls: 'lim' }] },
         notes: ['Deviasi lokal dihitung sebagai simpangan terbesar terhadap rata-rata titik-titik di dalam jendela busur yang sama (interpretasi "level within ±3 mm in any 9 m").', 'Untuk foundation miring, bandingkan selisih elevasi aktual dengan selisih terhitung dari titik tertinggi (7.5.5.3 / 10.5.6.3).']
       };
@@ -1637,6 +1871,7 @@ svg .hl-t.lim { fill: var(--fail); } svg .hl-t.lim2 { fill: var(--warn); }
         ],
         checks,
         table: { head: ['Titik', 'θ (°)', 'Elevasi', 'Prediksi cos', 'Ui', 'Si', 'Status'], rows: elev.map((e, i) => [i + 1, f(theta[i], 0), f(e, 1), f(r.fit.pred[i], 1), f(r.U[i], 1), f(r.S[i], 1), { ok: Math.abs(r.S[i]) <= r.Smax }]) },
+        charts: [{ type: 'polar', title: 'Tampak atas — out-of-plane settlement Si', labels: theta.map(t => f(t, 0) + '°'), angles: theta, values: r.S, tol: r.Smax, unit: 'mm', valueName: 'Si', center: 'bidang tilt' }],
         chart: { type: 'line', xLabel: 'θ (°)', yLabel: 'Elevasi (mm)', x: theta, series: [{ name: 'Terukur', y: elev, cls: 's1' }, { name: 'Cosine fit', y: r.fit.pred, cls: 's2' }] },
         notes: ['Bila R² < 0.9 atau Smax terlampaui, gunakan metode settlement arc (ST-02) atau analisis lebih rinci (B.3.2.4).', 'Kriteria ini tidak mencakup ridge/perubahan elevasi tajam, nozzle rendah, atau pola lipat pada cone roof dengan kolom.']
       };
@@ -1749,7 +1984,8 @@ svg .hl-t.lim { fill: var(--fail); } svg .hl-t.lim2 { fill: var(--warn); }
       checks.push({ l: 'Diferensial antar titik bersebelahan ≤ 13 mm × (jarak/10 m)', meas: f(worst, 1), lim: '≤ ' + f(lim, 1), u: 'mm', ok: worst <= lim ? true : 'warn', ref: '7.3.7.7' });
       const uni = Math.min(...s);
       checks.push({ l: 'Settlement seragam ≤ 50 mm', meas: f(uni, 1), lim: '≤ 50', u: 'mm', ok: uni <= 50 ? true : 'warn', ref: '7.3.7.7' });
-      return { summary: [{ l: 'Jarak titik', v: f(sp, 2), u: 'm' }, { l: 'Settlement maks.', v: f(Math.max(...s), 1), u: 'mm' }], checks, notes: ['Nilai di luar batas bukan otomatis ditolak; dilaporkan untuk dievaluasi Purchaser.'] };
+      const avg = s.reduce((a, b) => a + b, 0) / n;
+      return { summary: [{ l: 'Jarak titik', v: f(sp, 2), u: 'm' }, { l: 'Settlement maks.', v: f(Math.max(...s), 1), u: 'mm' }], checks, charts: [{ type: 'polar', title: 'Tampak atas — settlement terhadap rata-rata (+ turun lebih dalam)', labels: s.map((_, i) => i + 1), values: s.map(x => x - avg), unit: 'mm', valueName: 'Settlement − rata-rata', center: 'rata-rata ' + f(avg, 1) + ' mm' }], notes: ['Nilai di luar batas bukan otomatis ditolak; dilaporkan untuk dievaluasi Purchaser.'] };
     }
   });
 
@@ -1877,9 +2113,11 @@ svg .hl-t.lim { fill: var(--fail); } svg .hl-t.lim2 { fill: var(--warn); }
   function route() {
     const id = decodeURIComponent((location.hash || '#beranda').slice(1));
     const main = $('#main');
+    main.onclick = main.oninput = main.onchange = null;
     if (byId[id]) renderModule(byId[id]);
     else if (id === 'tangki') renderTank();
     else if (id === 'ringkasan') renderSummary();
+    else if (window.TKViews && window.TKViews[id]) window.TKViews[id]($('#main'));
     else renderHome();
     markActive();
     document.body.classList.remove('nav-open');
@@ -1936,6 +2174,7 @@ svg .hl-t.lim { fill: var(--fail); } svg .hl-t.lim2 { fill: var(--warn); }
       ${sampleBanner()}
       <header class="page-h"><p class="eyebrow">Profil</p><h1>Data Tangki</h1>
       <p class="lead">Nilai di sini otomatis dipakai oleh modul yang ditandai <span class="lnk-ic">⛓</span>. Ubah di modul bila satu perhitungan butuh nilai lain.</p></header>
+      <div class="card chart-card" id="tk-viz"></div>
       <div class="card form-grid">
         ${fld('tag', 'Tag / nomor tangki', '', 'text')}${fld('name', 'Nama / keterangan', '', 'text')}
         ${fld('loc', 'Lokasi', '', 'text')}${fld('service', 'Produk / service', '', 'text')}
@@ -1964,6 +2203,10 @@ svg .hl-t.lim { fill: var(--fail); } svg .hl-t.lim2 { fill: var(--warn); }
       S.tank[k] = el.tagName === 'SELECT' || ['tag', 'name', 'loc', 'service'].includes(k) ? el.value : (isNaN(parseNum(el.value)) ? el.value : parseNum(el.value));
       changed();
     }));
+    const drawTank = () => { $('#tk-viz').innerHTML = tankDrawing('Konfigurasi tangki (tampak samping)'); };
+    drawTank();
+    $('#main').oninput = drawTank;
+    $('#main').onchange = drawTank;
     $('#tk-courses').addEventListener('input', e => {
       const el = e.target; if (!el.dataset.c) return;
       S.tank.courses[+el.dataset.i][el.dataset.c] = parseNum(el.value);
@@ -1983,6 +2226,11 @@ svg .hl-t.lim { fill: var(--fail); } svg .hl-t.lim2 { fill: var(--warn); }
     $('#tk-sample').onclick = () => confirmInline($('#tk-sample'), 'Timpa dengan data contoh?', () => {
       S = { tank: JSON.parse(JSON.stringify(SAMPLE_TANK)), mods: {}, sample: true }; changed(); renderTank();
     });
+  }
+
+  function tankDrawing(title) {
+    const t = S.tank;
+    return window.TKViz.tank({ title, D: parseNum(t.D), Hs: parseNum(t.Hs), HL: parseNum(t.HL), roof: t.roofType, courses: (t.courses || []).map(c => ({ w: parseNum(c.w), t: parseNum(c.tNom) })) });
   }
 
   /* ----- Modul ----- */
@@ -2040,7 +2288,7 @@ svg .hl-t.lim { fill: var(--fail); } svg .hl-t.lim2 { fill: var(--warn); }
       if (fd.link && !el.closest('.fld').querySelector('.relink')) { const ic = el.closest('.fld').querySelector('.lnk-ic'); if (ic) ic.outerHTML = `<button class="relink" data-relink="${fd.k}" title="Ikuti Data Tangki lagi">↺ data tangki</button>`; }
       changed(m);
     }));
-    main.addEventListener('click', e => {
+    main.onclick = (e => {
       const rl = e.target.closest('[data-relink]');
       if (rl) { delete st.f[rl.dataset.relink]; changed(m); renderModule(m); }
     });
@@ -2107,7 +2355,7 @@ svg .hl-t.lim { fill: var(--fail); } svg .hl-t.lim2 { fill: var(--warn); }
       ${ck.length ? `<div class="card flush"><div class="tbl-wrap"><table class="checks"><thead><tr><th>Pemeriksaan</th><th class="r">Terukur</th><th class="r">Kriteria</th><th>Ref.</th><th>Status</th></tr></thead><tbody>
         ${ck.map(c => `<tr class="row-${okCls(c.ok)}"><td>${esc(c.l)}</td><td class="r num">${c.meas != null ? esc(c.meas) + (c.u ? ` <small>${esc(c.u)}</small>` : '') : ''}</td><td class="r num">${c.lim != null ? esc(c.lim) : ''}</td><td class="ref-c">${esc(c.ref || '')}</td><td><b class="pill st-${okCls(c.ok)}">${okTxt(c.ok)}</b></td></tr>`).join('')}
       </tbody></table></div></div>` : ''}
-      ${r.chart && !compact ? `<div class="card chart-card">${chartSvg(r.chart)}</div>` : ''}
+      ${!compact ? [].concat(r.charts || [], r.chart ? [r.chart] : []).map(ch => `<div class="card chart-card">${chartSvg(ch)}</div>`).join('') : ''}
       ${r.table ? `<div class="card flush"><div class="tbl-wrap"><table class="out"><thead><tr>${r.table.head.map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>
         ${r.table.rows.map(row => `<tr>${row.map(c => c && typeof c === 'object' ? `<td><b class="pill st-${okCls(c.ok)}">${okTxt(c.ok)}</b></td>` : `<td class="num">${esc(c)}</td>`).join('')}</tr>`).join('')}
       </tbody></table></div></div>` : ''}
@@ -2118,6 +2366,8 @@ svg .hl-t.lim { fill: var(--fail); } svg .hl-t.lim2 { fill: var(--warn); }
 
   /* ---------- Chart SVG ---------- */
   function chartSvg(ch) {
+    if (ch.type === 'tank') return window.TKViz.tank(Object.assign({ roof: S.tank.roofType, Hs: parseNum(S.tank.Hs) }, ch));
+    if (ch.type === 'polar') return window.TKViz.polar(ch);
     const W = 640, H = 260, L = 52, R = 14, T = 26, B = 42;
     const pw = W - L - R, ph = H - T - B;
     const bars = ch.type === 'bars';
@@ -2260,7 +2510,290 @@ svg .hl-t.lim { fill: var(--fail); } svg .hl-t.lim2 { fill: var(--warn); }
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
   // ekspos untuk pengujian
-  window.TKApp = { run, byId };
+  window.TKApp = { run, byId, get S() { return S; }, CATS, M, esc, f, parseNum, fieldRaw, fieldVal, rowsRaw, isLinked, resultsHtml, chartSvg, tankDrawing, STATUS_TXT, okTxt, okCls, catOf, toast, copyText, inFrame, save };
+})();
+</script>
+<script>
+/* Toolkit Tangki — penulis .xlsx minimal tanpa library luar (bekerja offline).
+ * XLite.build([{ name, rows: [[...]], cols: [lebar], bold: Set(indeks baris), title: Set, filter: 'A1:H10' }]) → Uint8Array
+ * Sel angka ditulis sebagai number, lainnya inline string. ZIP disimpan tanpa kompresi (store).
+ */
+(function (root) {
+  const X = {};
+  const enc = new TextEncoder();
+  const xmlEsc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '');
+  const colName = i => { let s = ''; i++; while (i > 0) { const m = (i - 1) % 26; s = String.fromCharCode(65 + m) + s; i = Math.floor((i - 1) / 26); } return s; };
+  X.colName = colName;
+
+  function sheetXml(sh) {
+    const rows = sh.rows.map((r, ri) => {
+      const st = sh.title && sh.title.has(ri) ? 2 : sh.bold && sh.bold.has(ri) ? 1 : 0;
+      const cells = r.map((v, ci) => {
+        if (v === '' || v == null) return '';
+        const ref = colName(ci) + (ri + 1);
+        const s = st ? ` s="${st}"` : '';
+        if (typeof v === 'number' && Number.isFinite(v)) return `<c r="${ref}"${s}><v>${v}</v></c>`;
+        return `<c r="${ref}"${s} t="inlineStr"><is><t xml:space="preserve">${xmlEsc(v)}</t></is></c>`;
+      }).join('');
+      return `<row r="${ri + 1}">${cells}</row>`;
+    }).join('');
+    const cols = (sh.cols || []).length ? `<cols>${sh.cols.map((w, i) => `<col min="${i + 1}" max="${i + 1}" width="${w}" customWidth="1"/>`).join('')}</cols>` : '';
+    const filt = sh.filter ? `<autoFilter ref="${sh.filter}"/>` : '';
+    return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"/></sheetViews>${cols}<sheetData>${rows}</sheetData>${filt}<pageSetup paperSize="9" orientation="landscape" fitToWidth="1" fitToHeight="0"/></worksheet>`;
+  }
+
+  X.build = function (sheets) {
+    const names = sheets.map((s, i) => xmlEsc(String(s.name || 'Sheet' + (i + 1)).replace(/[\\/?*[\]:]/g, '_').slice(0, 31)));
+    const files = [];
+    const add = (path, str) => files.push({ path, data: enc.encode(str) });
+    add('[Content_Types].xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${sheets.map((_, i) => `<Override PartName="/xl/worksheets/sheet${i + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('')}</Types>`);
+    add('_rels/.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`);
+    add('xl/workbook.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>${names.map((n, i) => `<sheet name="${n}" sheetId="${i + 1}" r:id="rId${i + 1}"/>`).join('')}</sheets></workbook>`);
+    add('xl/_rels/workbook.xml.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${sheets.map((_, i) => `<Relationship Id="rId${i + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i + 1}.xml"/>`).join('')}<Relationship Id="rId${sheets.length + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`);
+    add('xl/styles.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="3"><font><sz val="10"/><name val="Arial"/></font><font><b/><sz val="10"/><name val="Arial"/></font><font><b/><sz val="13"/><name val="Arial"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFDCEFF1"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="3"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf><xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`);
+    sheets.forEach((s, i) => add(`xl/worksheets/sheet${i + 1}.xml`, sheetXml(s)));
+    return zipStore(files);
+  };
+
+  /* ---------- ZIP (store) ---------- */
+  const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+  const crc32 = d => { let c = 0xFFFFFFFF; for (let i = 0; i < d.length; i++) c = CRC[(c ^ d[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; };
+  function zipStore(files) {
+    const parts = [], central = [];
+    let off = 0;
+    const now = new Date();
+    const dt = ((now.getHours() << 11) | (now.getMinutes() << 5) | (now.getSeconds() >> 1)) & 0xFFFF;
+    const dd = (((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate()) & 0xFFFF;
+    files.forEach(f => {
+      const name = enc.encode(f.path), crc = crc32(f.data), sz = f.data.length;
+      const lh = new DataView(new ArrayBuffer(30));
+      lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true); lh.setUint16(8, 0, true);
+      lh.setUint16(10, dt, true); lh.setUint16(12, dd, true); lh.setUint32(14, crc, true); lh.setUint32(18, sz, true); lh.setUint32(22, sz, true);
+      lh.setUint16(26, name.length, true); lh.setUint16(28, 0, true);
+      parts.push(new Uint8Array(lh.buffer), name, f.data);
+      const ch = new DataView(new ArrayBuffer(46));
+      ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true); ch.setUint16(10, 0, true);
+      ch.setUint16(12, dt, true); ch.setUint16(14, dd, true); ch.setUint32(16, crc, true); ch.setUint32(20, sz, true); ch.setUint32(24, sz, true);
+      ch.setUint16(28, name.length, true); ch.setUint32(42, off, true);
+      central.push(new Uint8Array(ch.buffer), name);
+      off += 30 + name.length + sz;
+    });
+    const cdSize = central.reduce((a, b) => a + b.length, 0);
+    const end = new DataView(new ArrayBuffer(22));
+    end.setUint32(0, 0x06054b50, true); end.setUint16(8, files.length, true); end.setUint16(10, files.length, true);
+    end.setUint32(12, cdSize, true); end.setUint32(16, off, true);
+    const all = parts.concat(central, [new Uint8Array(end.buffer)]);
+    const out = new Uint8Array(all.reduce((a, b) => a + b.length, 0));
+    let p = 0; all.forEach(b => { out.set(b, p); p += b.length; });
+    return out;
+  }
+
+  root.XLite = X;
+  if (typeof module !== 'undefined') module.exports = X;
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* Toolkit Tangki — halaman Laporan: pratinjau siap cetak (PDF lewat dialog cetak browser) dan ekspor Excel (.xlsx). */
+(function () {
+  const A = window.TKApp;
+  const $ = (s, el = document) => el.querySelector(s);
+  const { esc, f } = A;
+  const today = () => new Date().toISOString().slice(0, 10);
+
+  const meta = () => {
+    const S = A.S;
+    S.report = Object.assign({ no: '', date: today(), insp: '', chk: '', appr: '', client: '', scope: '', inputs: true, charts: true, notes: '' }, S.report || {});
+    return S.report;
+  };
+
+  /* ---------- data per modul ---------- */
+  function fieldsList(m) {
+    return (m.fields || []).map(fd => {
+      const raw = A.fieldRaw(m, fd);
+      const val = fd.type === 'sel' ? (fd.opts[raw] || fd.opts[fd.def]).l : raw;
+      return { l: fd.l, v: val, u: fd.u || '', linked: A.isLinked(m, fd) };
+    });
+  }
+  function inputTable(m) {
+    if (!m.table) return null;
+    const head = m.table.cols.map(c => c.l);
+    const rows = A.rowsRaw(m).map(r => m.table.cols.map(c => {
+      const x = r[c.k];
+      if (c.type === 'sel') return (c.opts[x === '' || x == null ? c.def : x] || c.opts[0]).l;
+      return x == null ? '' : x;
+    })).filter(row => row.some(x => x !== '' && x != null));
+    return { title: m.table.l, head, rows };
+  }
+  function selected(scope) {
+    const S = A.S;
+    const all = A.M.map(m => ({ m, r: A.run(m) }));
+    if (scope === 'issues') return all.filter(x => x.r.status === 'fail' || x.r.status === 'warn');
+    if (scope === 'filled') return all.filter(x => S.mods[x.m.id] && Object.keys(S.mods[x.m.id]).length);
+    return all;
+  }
+  const defaultScope = () => Object.keys(A.S.mods || {}).some(k => Object.keys(A.S.mods[k] || {}).length) ? 'filled' : 'all';
+
+  /* ---------- tampilan ---------- */
+  function render(main) {
+    const R = meta();
+    if (!R.scope) R.scope = defaultScope();
+    const t = A.S.tank;
+    const fld = (k, l, type = 'text') => `<label class="fld"><span class="fl">${l}</span><input id="rp-${k}" data-rk="${k}" type="${type}" value="${esc(R[k])}"></label>`;
+    main.innerHTML = `
+      <header class="page-h no-print"><p class="eyebrow">Output</p><h1>Laporan &amp; Ekspor</h1>
+        <p class="lead">Atur identitas laporan dan modul yang dimasukkan, lalu cetak ke PDF atau unduh Excel. Pratinjau di bawah persis yang akan tercetak.</p></header>
+      <div class="card no-print rp-set">
+        <div class="form-grid">
+          ${fld('no', 'No. laporan')}${fld('date', 'Tanggal inspeksi', 'date')}
+          ${fld('client', 'Perusahaan / klien')}${fld('insp', 'Dibuat oleh (inspector)')}
+          ${fld('chk', 'Diperiksa oleh')}${fld('appr', 'Disetujui oleh')}
+          <label class="fld"><span class="fl">Modul yang dimasukkan</span><select id="rp-scope" data-rk="scope">
+            <option value="all" ${R.scope === 'all' ? 'selected' : ''}>Semua modul (${A.M.length})</option>
+            <option value="filled" ${R.scope === 'filled' ? 'selected' : ''}>Hanya modul yang sudah diisi</option>
+            <option value="issues" ${R.scope === 'issues' ? 'selected' : ''}>Hanya yang perlu perhatian (NG / Cek)</option></select></label>
+          <div class="fld rp-opts"><span class="fl">Isi tambahan</span>
+            <label class="chk"><input type="checkbox" id="rp-inputs" data-rk="inputs" ${R.inputs ? 'checked' : ''}> Data input</label>
+            <label class="chk"><input type="checkbox" id="rp-charts" data-rk="charts" ${R.charts ? 'checked' : ''}> Gambar &amp; grafik</label></div>
+        </div>
+        <label class="fld"><span class="fl">Kesimpulan / rekomendasi umum</span><textarea id="rp-notes" data-rk="notes" rows="3">${esc(R.notes)}</textarea></label>
+        <div class="row-btns">
+          <button class="btn" id="rp-pdf">Cetak / simpan PDF</button>
+          <button class="btn" id="rp-xlsx">Unduh Excel (.xlsx)</button>
+          <span class="muted small" id="rp-msg">${A.inFrame ? 'Cetak dan unduhan tidak tersedia di pratinjau ini. Buka aplikasi di browser (mis. GitHub Pages) untuk mengekspor.' : 'PDF: pada dialog cetak pilih tujuan "Save as PDF", ukuran A4.'}</span>
+        </div>
+      </div>
+      <article class="report-doc" id="rp-doc"></article>`;
+    const redraw = () => { $('#rp-doc').innerHTML = docHtml(); };
+    main.querySelectorAll('[data-rk]').forEach(el => el.addEventListener(el.type === 'checkbox' || el.tagName === 'SELECT' ? 'change' : 'input', () => {
+      R[el.dataset.rk] = el.type === 'checkbox' ? el.checked : el.value;
+      A.save(); redraw();
+    }));
+    $('#rp-pdf').onclick = () => { if (A.inFrame) return A.toast('Cetak tidak tersedia di pratinjau ini.'); window.print(); };
+    $('#rp-xlsx').onclick = exportXlsx;
+    redraw();
+  }
+
+  function docHtml() {
+    const R = meta(), t = A.S.tank;
+    const sel = selected(R.scope);
+    const all = A.M.map(m => ({ m, r: A.run(m) }));
+    const findings = [];
+    sel.forEach(({ m, r }) => (r.checks || []).forEach(c => { if (c.ok === false || c.ok === 'warn') findings.push({ m, c }); }));
+    const cnt = s => sel.filter(x => x.r.status === s).length;
+    const info = [['No. laporan', R.no], ['Tanggal inspeksi', R.date], ['Perusahaan / klien', R.client], ['Tag tangki', t.tag], ['Nama / keterangan', t.name], ['Lokasi', t.loc], ['Produk / service', t.service], ['Tahun operasi', t.year]];
+    const dims = [['Diameter D', f(+t.D), 'm'], ['Tinggi shell', f(+t.Hs), 'm'], ['Tinggi cairan maks.', f(+t.HL), 'm'], ['Specific gravity', f(+t.G, 2), ''], ['Jenis roof', t.roofType === 'open' ? 'Open top / floating' : 'Fixed roof', ''], ['Jumlah course', (t.courses || []).length, '']];
+    return `
+      <header class="rd-cover">
+        <div class="rd-title"><p class="eyebrow">Laporan evaluasi &amp; inspeksi tangki timbun</p>
+          <h1>${esc(t.tag || 'Tangki')} ${t.name ? '— ' + esc(t.name) : ''}</h1>
+          <p class="muted">Dasar evaluasi: API Std 653 5th Ed. (2014) dan API Std 650 (2020)</p></div>
+        <div class="rd-two">
+          <table class="kv">${info.map(([k, v]) => `<tr><th>${k}</th><td>${esc(v || '–')}</td></tr>`).join('')}</table>
+          <table class="kv">${dims.map(([k, v, u]) => `<tr><th>${k}</th><td class="num">${esc(v)} ${u}</td></tr>`).join('')}
+            <tr><th>Course (lebar × t nominal)</th><td class="num small">${(t.courses || []).map((c, i) => `C${i + 1}: ${c.w} × ${c.tNom} mm`).join('<br>')}</td></tr></table>
+        </div>
+        ${R.charts ? `<div class="rd-fig">${A.tankDrawing('Gambar 1 — Konfigurasi tangki (tampak samping)')}</div>` : ''}
+      </header>
+      <section class="rd-sec">
+        <h2>1. Ringkasan hasil</h2>
+        <p>${sel.length} modul dievaluasi: <b class="st-txt pass">${cnt('pass')} memenuhi</b>, <b class="st-txt warn">${cnt('warn')} perlu tindak lanjut</b>, <b class="st-txt fail">${cnt('fail')} tidak memenuhi</b>${cnt('na') ? `, ${cnt('na')} informasi` : ''}.</p>
+        <table class="rd-tbl"><thead><tr><th>Kode</th><th>Modul</th><th>Kategori</th><th>Referensi</th><th class="r">NG</th><th class="r">Cek</th><th>Status</th></tr></thead><tbody>
+        ${sel.map(({ m, r }) => { const c = A.catOf(m); const ck = r.checks || []; return `<tr><td class="code">${m.id}</td><td>${esc(m.title)}</td><td>${c.id} · ${esc(c.groups.find(g => g.id === m.grp).title)}</td><td class="small">${m.refs.map(esc).join('; ')}</td><td class="r num">${ck.filter(x => x.ok === false).length}</td><td class="r num">${ck.filter(x => x.ok === 'warn').length}</td><td><b class="pill st-${r.status}">${A.STATUS_TXT[r.status]}</b></td></tr>`; }).join('')}
+        </tbody></table>
+      </section>
+      <section class="rd-sec">
+        <h2>2. Daftar temuan</h2>
+        ${findings.length ? `<table class="rd-tbl"><thead><tr><th>Kode</th><th>Pemeriksaan</th><th class="r">Terukur</th><th class="r">Kriteria</th><th>Ref.</th><th>Status</th></tr></thead><tbody>
+          ${findings.map(({ m, c }) => `<tr><td class="code">${m.id}</td><td>${esc(c.l)}</td><td class="r num">${esc(c.meas ?? '')} ${esc(c.u || '')}</td><td class="r num">${esc(c.lim ?? '')}</td><td class="small">${esc(c.ref || '')}</td><td><b class="pill st-${A.okCls(c.ok)}">${A.okTxt(c.ok)}</b></td></tr>`).join('')}
+        </tbody></table>` : '<p class="muted">Tidak ada pemeriksaan yang berstatus NG atau Cek pada modul yang dipilih.</p>'}
+        ${R.notes ? `<h3>Kesimpulan / rekomendasi</h3><p class="rd-notes">${esc(R.notes).replace(/\n/g, '<br>')}</p>` : ''}
+      </section>
+      ${sel.map(({ m, r }, i) => modHtml(m, r, i + 3, R)).join('')}
+      <section class="rd-sec rd-sign">
+        <h2>Pengesahan</h2>
+        <div class="sign">${[['Dibuat oleh', R.insp], ['Diperiksa oleh', R.chk], ['Disetujui oleh', R.appr]].map(([k, v]) => `<div><span class="muted small">${k}</span><div class="sline"></div><b>${esc(v || '')}</b><span class="muted small">Tanggal:</span></div>`).join('')}</div>
+        <p class="muted small">Dihasilkan dengan Toolkit Tangki. Kurva edge settlement (API 653 Fig. B.11/B.12) didigitasi dari grafik standar. Keputusan akhir oleh inspector / storage tank engineer yang berwenang.</p>
+      </section>`;
+  }
+
+  function modHtml(m, r, no, R) {
+    const c = A.catOf(m);
+    const fl = fieldsList(m), it = R.inputs ? inputTable(m) : null;
+    const body = A.resultsHtml(Object.assign({}, r, R.charts ? {} : { chart: null, charts: null }));
+    return `<section class="rd-sec rd-mod">
+      <div class="rd-mh"><span class="code">${m.id}</span><h2>${no}. ${esc(m.title)}</h2><b class="pill st-${r.status}">${A.STATUS_TXT[r.status]}</b></div>
+      <p class="small muted">${c.id} · ${esc(c.title)} — Referensi: ${m.refs.map(esc).join('; ')}</p>
+      <p class="small"><b>Parameter yang ditinjau:</b> ${m.params.map(esc).join(' · ')}</p>
+      ${R.inputs && (fl.length || it) ? `<div class="rd-in">
+        ${fl.length ? `<table class="kv sm"><caption>Data input</caption>${fl.map(x => `<tr><th>${esc(x.l)}</th><td class="num">${esc(x.v)} ${esc(x.u === '–' ? '' : x.u)}</td></tr>`).join('')}</table>` : ''}
+        ${it && it.rows.length ? `<div class="tbl-wrap"><table class="rd-tbl sm"><caption>${esc(it.title)}</caption><thead><tr><th>#</th>${it.head.map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${it.rows.map((row, i) => `<tr><td class="num">${i + 1}</td>${row.map(x => `<td class="num">${esc(x)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>` : ''}
+      </div>` : ''}
+      <div class="rd-res">${body}</div>
+    </section>`;
+  }
+
+  /* ---------- Excel (js/xlsx-lite.js, tanpa koneksi internet) ---------- */
+  const cell = v => {
+    if (v == null) return '';
+    if (typeof v === 'number') return Number.isFinite(v) ? v : '';
+    const s = String(v).trim();
+    return /^[-+]?\d+(\.\d+)?$/.test(s) ? Number(s) : s;
+  };
+  function Sheet(name, cols) {
+    const sh = { name, cols, rows: [], bold: new Set(), title: new Set() };
+    sh.row = (r, kind) => { if (kind === 'b') sh.bold.add(sh.rows.length); if (kind === 't') sh.title.add(sh.rows.length); sh.rows.push((r || []).map(cell)); return sh; };
+    return sh;
+  }
+  function buildWorkbook() {
+    const R = meta(), t = A.S.tank, sel = selected(R.scope);
+    const st = s => A.STATUS_TXT[s];
+    const sum = Sheet('Ringkasan', [26, 42, 30, 44, 11, 11, 20]);
+    sum.row(['LAPORAN EVALUASI & INSPEKSI TANGKI TIMBUN'], 't').row(['Dasar: API Std 653 5th Ed. (2014), API Std 650 (2020)']).row([]);
+    [['No. laporan', R.no], ['Tanggal inspeksi', R.date], ['Perusahaan / klien', R.client], ['Tag tangki', t.tag], ['Nama', t.name], ['Lokasi', t.loc], ['Produk', t.service],
+      ['Diameter D (m)', t.D], ['Tinggi shell (m)', t.Hs], ['Tinggi cairan maks. (m)', t.HL], ['Specific gravity', t.G], ['Jenis roof', t.roofType === 'open' ? 'Open top / floating' : 'Fixed roof'],
+      ['Dibuat oleh', R.insp], ['Diperiksa oleh', R.chk], ['Disetujui oleh', R.appr]].forEach(r => sum.row(r));
+    sum.row([]).row(['Kode', 'Modul', 'Kategori', 'Referensi', 'Jumlah NG', 'Jumlah Cek', 'Status'], 'b');
+    sel.forEach(({ m, r }) => { const c = A.catOf(m), ck = r.checks || []; sum.row([m.id, m.title, c.id + ' · ' + c.groups.find(g => g.id === m.grp).title, m.refs.join('; '), ck.filter(x => x.ok === false).length, ck.filter(x => x.ok === 'warn').length, st(r.status)]); });
+    if (R.notes) sum.row([]).row(['Kesimpulan / rekomendasi', R.notes]);
+
+    const fnd = Sheet('Semua pemeriksaan', [8, 32, 56, 12, 8, 14, 16, 8]);
+    fnd.row(['Kode', 'Modul', 'Pemeriksaan', 'Terukur', 'Satuan', 'Kriteria', 'Referensi', 'Status'], 'b');
+    sel.forEach(({ m, r }) => (r.checks || []).forEach(c => fnd.row([m.id, m.title, c.l, c.meas, c.u || '', c.lim, c.ref || '', A.okTxt(c.ok)])));
+    fnd.filter = 'A1:H' + fnd.rows.length;
+
+    const tk = Sheet('Data tangki', [10, 14, 16]);
+    tk.row(['Course', 'Lebar (mm)', 't nominal (mm)'], 'b');
+    (t.courses || []).forEach((c, i) => tk.row([i + 1, c.w, c.tNom]));
+
+    const mods = sel.map(({ m, r }) => {
+      const a = Sheet(m.id, [46, 16, 12, 16, 16, 12, 12, 12, 12, 12]);
+      a.row([m.id + ' — ' + m.title], 't').row(['Status', st(r.status)]).row(['Referensi', m.refs.join('; ')]).row(['Parameter yang ditinjau', m.params.join('; ')]).row(['Uraian', m.desc]).row([]);
+      const fl = fieldsList(m);
+      if (fl.length) { a.row(['INPUT', 'Nilai', 'Satuan'], 'b'); fl.forEach(x => a.row([x.l, x.v, x.u === '–' ? '' : x.u])); a.row([]); }
+      const it = inputTable(m);
+      if (it && it.rows.length) { a.row([it.title.toUpperCase()], 'b'); a.row(['#'].concat(it.head), 'b'); it.rows.forEach((row, i) => a.row([i + 1].concat(row))); a.row([]); }
+      if ((r.summary || []).length) { a.row(['HASIL', 'Nilai', 'Satuan', 'Keterangan'], 'b'); r.summary.forEach(s => a.row([s.l, s.v, s.u, s.s || ''])); a.row([]); }
+      if ((r.checks || []).length) { a.row(['PEMERIKSAAN', 'Terukur', 'Satuan', 'Kriteria', 'Referensi', 'Status'], 'b'); r.checks.forEach(c => a.row([c.l, c.meas, c.u || '', c.lim, c.ref || '', A.okTxt(c.ok)])); a.row([]); }
+      if (r.table) { a.row(['TABEL PERHITUNGAN'], 'b'); a.row(r.table.head, 'b'); r.table.rows.forEach(row => a.row(row.map(x => x && typeof x === 'object' ? A.okTxt(x.ok) : x))); a.row([]); }
+      if ((r.notes || []).length) { a.row(['CATATAN'], 'b'); r.notes.forEach(n => a.row([n])); }
+      if (r.error) a.row(['ERROR', r.error]);
+      return a;
+    });
+    return [sum, fnd, tk].concat(mods);
+  }
+  function exportXlsx() {
+    if (A.inFrame) return A.toast('Unduhan tidak tersedia di pratinjau ini.');
+    const R = meta(), t = A.S.tank;
+    const bytes = window.XLite.build(buildWorkbook());
+    const name = `Laporan_${(t.tag || 'tangki').replace(/[^\w-]+/g, '_')}_${R.date || today()}.xlsx`;
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+    a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    $('#rp-msg').textContent = 'File diunduh: ' + name;
+  }
+
+  window.TKViews = Object.assign(window.TKViews || {}, { laporan: render });
 })();
 </script>
 </body>

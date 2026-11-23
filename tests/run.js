@@ -32,6 +32,12 @@ near(C.edgeAllow(TKData.edgeBe, 20, 1).B, 2.0, 1e-9, 'Be 20 @1');
 near(C.annular653({ tShell: 0.8, stress: 25000 }).step, 0.22, 0, 'annular 653 step');
 // MRT
 near(C.mrt653({ RTbc: 6.2, RTip: 6, StPr: 0.08, UPr: 0.09, Or: 10 }).MRT, 4.3, 1e-9, 'MRT');
+// Penulis xlsx menghasilkan ZIP valid (tanda tangan PK)
+globalThis.TextEncoder = globalThis.TextEncoder || require('util').TextEncoder;
+const XL = require('../js/xlsx-lite.js');
+const bytes = XL.build([{ name: 'Uji', rows: [['a', 1.5], ['b', 2]], cols: [10, 10] }]);
+near(bytes[0] === 0x50 && bytes[1] === 0x4b ? 1 : 0, 1, 0, 'xlsx zip signature');
+near(XL.colName(27) === 'AB' ? 1 : 0, 1, 0, 'nama kolom Excel');
 // Semua modul berjalan dengan data contoh
 const app = {};
 M.forEach(m => {
