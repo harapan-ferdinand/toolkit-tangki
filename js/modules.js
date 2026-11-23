@@ -106,6 +106,10 @@
         ],
         checks,
         table: { head: ['Course', 'Elev. dasar (m)', 'H (m)', 'S (psi)', 'tmin (mm)', 't akt. (mm)', 'CR (mm/th)', 'Sisa umur (th)', 'Level Ht (m)', 'Status'], rows: trows },
+        charts: [{
+          type: 'tank', title: 'Konfigurasi shell — status per course', D: v.D, HL: v.HL,
+          courses: res.rows.map((r, i) => ({ w: rows[i].w, t: r.tAct, ok: r.aboveLiquid ? null : r.tAct >= r.tminMm + (v.CAn || 0), label: r.aboveLiquid ? 'di atas cairan' : 'tmin ' + f(r.tminMm + (v.CAn || 0)) }))
+        }],
         chart: {
           type: 'bars', xLabel: 'Course', yLabel: 'mm',
           cats: res.rows.map(r => 'C' + r.n),
@@ -243,6 +247,7 @@
         summary: [{ l: 'Tebal nominal minimum (5.6.1.1)', v: tMinTab, u: 'mm' }, { l: 'Tinggi shell dari tabel', v: f(z), u: 'm' }],
         checks,
         table: { head: ['Course', 'H (m)', 'td (mm)', 'tt (mm)', 't min tabel', 't syarat (mm)', 't terpasang', 'Status'], rows: trows },
+        charts: [{ type: 'tank', title: 'Konfigurasi shell — tebal terpasang vs syarat', D: v.D, HL: v.HL, courses: rows.map((r, i) => ({ w: r.w, t: num(r.tNom) ? r.tNom : yreq[i], ok: num(r.tNom) ? r.tNom >= yreq[i] - 1e-9 : null, label: 'syarat ' + f(yreq[i]) })) }],
         chart: { type: 'bars', xLabel: 'Course', yLabel: 'mm', cats: rows.map((_, i) => 'C' + (i + 1)), series: [{ name: 't terpasang', y: ys, cls: 's1' }, { name: 't syarat', y: yreq, cls: 'lim', line: true }] },
         notes: v.D > 61 ? ['⚠ D > 61 m: 1-foot method tidak boleh dipakai (5.6.3.1), gunakan variable-design-point.'] : ['Untuk 3.2 m < D < 15 m, course terbawah minimal 6 mm (Note 4).']
       };
@@ -623,6 +628,7 @@
       return {
         summary: [{ l: 'Batas out-of-plumb', v: f(lim, 1), u: 'mm', s: v.basis === '650' ? 'H/200' : 'H/100, maks. 127 mm' }, { l: 'Simpangan maks.', v: f(st.max, 1), u: 'mm' }],
         checks,
+        charts: [{ type: 'polar', title: 'Tampak atas — arah & besar simpangan puncak', labels: pts.map(r => r.id), angles: root.TKViz && root.TKViz.anglesFrom(pts.map(r => r.id)), values: pts.map(r => r.d), tol: lim, unit: 'mm', valueName: 'Simpangan (+ keluar)', center: 'H ' + f(v.H) + ' m' }],
         chart: { type: 'bars', xLabel: 'Stasiun', yLabel: 'mm', cats: pts.map(r => r.id), series: [{ name: 'Simpangan', y: pts.map(r => r.d), cls: 's1' }], hlines: [{ y: lim, name: '+batas', cls: 'lim' }, { y: -lim, name: '−batas', cls: 'lim' }] },
         notes: ['Out-of-plumbness per course juga tidak boleh melebihi toleransi flatness/waviness ASTM A6/A20/A480.', 'Untuk tangki IFR berlaku juga Annex H (H.4.1.1), ambil yang lebih ketat.', 'Ukur sebelum hydrotest (7.5.1 / 10.5.1.2).']
       };
@@ -660,6 +666,7 @@
       return {
         summary: [{ l: 'Radius nominal', v: f(Rn, 0), u: 'mm' }, { l: 'Toleransi', v: '± ' + f(tol, 1), u: 'mm', s: high && v.basis === '653' ? '3× Table 10.2' : '' }, { l: 'Ovality (Rmaks − Rmin)', v: f(st.max - st.min, 1), u: 'mm' }],
         checks,
+        charts: [{ type: 'polar', title: 'Tampak atas — profil radius terukur', labels: pts.map(r => r.id), angles: root.TKViz && root.TKViz.anglesFrom(pts.map(r => r.id)), values: dev, tol, unit: 'mm', valueName: 'R − Rnom', center: 'R ' + f(Rn / 1000, 3) + ' m' }],
         chart: { type: 'bars', xLabel: 'Stasiun', yLabel: 'mm', cats: pts.map(r => r.id), series: [{ name: 'R − Rnom', y: dev, cls: 's1' }], hlines: [{ y: tol, name: '+tol', cls: 'lim' }, { y: -tol, name: '−tol', cls: 'lim' }] },
         notes: notes.concat(['Ovality akibat settlement dapat mengganggu floating roof (653 B.3.2.3).'])
       };
@@ -790,6 +797,7 @@
       return {
         summary: [{ l: 'Elevasi rata-rata', v: f(avg, 1), u: 'mm' }, { l: 'Jarak antar titik', v: f(sp, 2), u: 'm' }, { l: 'Deviasi lokal terbesar', v: f(worst, 1), u: 'mm', s: 'mulai titik ' + (at + 1) }],
         checks,
+        charts: [{ type: 'polar', title: 'Tampak atas — elevasi foundation terhadap rata-rata', labels: e.map((_, i) => i + 1), values: dev, tol: totLim, unit: 'mm', valueName: 'Deviasi elevasi', center: 'rata-rata' }],
         chart: { type: 'line', xLabel: 'Titik', yLabel: 'mm dari rata-rata', x: e.map((_, i) => i + 1), series: [{ name: 'Deviasi', y: dev, cls: 's1' }], hlines: [{ y: totLim, name: '+batas', cls: 'lim' }, { y: -totLim, name: '−batas', cls: 'lim' }] },
         notes: ['Deviasi lokal dihitung sebagai simpangan terbesar terhadap rata-rata titik-titik di dalam jendela busur yang sama (interpretasi "level within ±3 mm in any 9 m").', 'Untuk foundation miring, bandingkan selisih elevasi aktual dengan selisih terhitung dari titik tertinggi (7.5.5.3 / 10.5.6.3).']
       };
@@ -841,6 +849,7 @@
         ],
         checks,
         table: { head: ['Titik', 'θ (°)', 'Elevasi', 'Prediksi cos', 'Ui', 'Si', 'Status'], rows: elev.map((e, i) => [i + 1, f(theta[i], 0), f(e, 1), f(r.fit.pred[i], 1), f(r.U[i], 1), f(r.S[i], 1), { ok: Math.abs(r.S[i]) <= r.Smax }]) },
+        charts: [{ type: 'polar', title: 'Tampak atas — out-of-plane settlement Si', labels: theta.map(t => f(t, 0) + '°'), angles: theta, values: r.S, tol: r.Smax, unit: 'mm', valueName: 'Si', center: 'bidang tilt' }],
         chart: { type: 'line', xLabel: 'θ (°)', yLabel: 'Elevasi (mm)', x: theta, series: [{ name: 'Terukur', y: elev, cls: 's1' }, { name: 'Cosine fit', y: r.fit.pred, cls: 's2' }] },
         notes: ['Bila R² < 0.9 atau Smax terlampaui, gunakan metode settlement arc (ST-02) atau analisis lebih rinci (B.3.2.4).', 'Kriteria ini tidak mencakup ridge/perubahan elevasi tajam, nozzle rendah, atau pola lipat pada cone roof dengan kolom.']
       };
@@ -953,7 +962,8 @@
       checks.push({ l: 'Diferensial antar titik bersebelahan ≤ 13 mm × (jarak/10 m)', meas: f(worst, 1), lim: '≤ ' + f(lim, 1), u: 'mm', ok: worst <= lim ? true : 'warn', ref: '7.3.7.7' });
       const uni = Math.min(...s);
       checks.push({ l: 'Settlement seragam ≤ 50 mm', meas: f(uni, 1), lim: '≤ 50', u: 'mm', ok: uni <= 50 ? true : 'warn', ref: '7.3.7.7' });
-      return { summary: [{ l: 'Jarak titik', v: f(sp, 2), u: 'm' }, { l: 'Settlement maks.', v: f(Math.max(...s), 1), u: 'mm' }], checks, notes: ['Nilai di luar batas bukan otomatis ditolak; dilaporkan untuk dievaluasi Purchaser.'] };
+      const avg = s.reduce((a, b) => a + b, 0) / n;
+      return { summary: [{ l: 'Jarak titik', v: f(sp, 2), u: 'm' }, { l: 'Settlement maks.', v: f(Math.max(...s), 1), u: 'mm' }], checks, charts: [{ type: 'polar', title: 'Tampak atas — settlement terhadap rata-rata (+ turun lebih dalam)', labels: s.map((_, i) => i + 1), values: s.map(x => x - avg), unit: 'mm', valueName: 'Settlement − rata-rata', center: 'rata-rata ' + f(avg, 1) + ' mm' }], notes: ['Nilai di luar batas bukan otomatis ditolak; dilaporkan untuk dievaluasi Purchaser.'] };
     }
   });
 

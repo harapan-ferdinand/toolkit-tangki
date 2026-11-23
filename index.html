@@ -19,6 +19,7 @@
     <a class="top-link" href="#beranda">Klasifikasi</a>
     <a class="top-link" href="#tangki">Data Tangki</a>
     <a class="top-link" href="#ringkasan">Ringkasan</a>
+    <a class="top-link" href="#laporan">Laporan &amp; Ekspor</a>
   </nav>
   <div class="top-act">
     <button class="btn ghost sm" id="btn-import">Buka proyek</button>
@@ -28,7 +29,7 @@
 </header>
 <div class="layout">
   <aside class="side" aria-label="Navigasi modul">
-    <nav class="side-links"><a class="top-link" href="#beranda">Klasifikasi</a><a class="top-link" href="#tangki">Data Tangki</a><a class="top-link" href="#ringkasan">Ringkasan</a><button class="btn ghost sm" type="button" onclick="document.getElementById('file').click()">Buka proyek</button></nav>
+    <nav class="side-links"><a class="top-link" href="#beranda">Klasifikasi</a><a class="top-link" href="#tangki">Data Tangki</a><a class="top-link" href="#ringkasan">Ringkasan</a><a class="top-link" href="#laporan">Laporan &amp; Ekspor</a><button class="btn ghost sm" type="button" onclick="document.getElementById('file').click()">Buka proyek</button></nav>
     <label class="search"><span class="sr">Cari modul atau parameter</span><input id="q" type="search" placeholder="Cari: plumbness, annular, 4.4.5…"></label>
     <div id="nav"></div>
     <p class="side-foot">Referensi: API Std 653 5th Ed. (2014), API Std 650 (2020). Hasil bersifat alat bantu engineering; keputusan akhir tetap oleh inspector / engineer berwenang.</p>
@@ -38,7 +39,10 @@
 <div class="toast" id="toast" role="status" hidden></div>
 <script src="js/data.js"></script>
 <script src="js/calc.js"></script>
+<script src="js/viz.js"></script>
 <script src="js/modules.js"></script>
 <script src="js/app.js"></script>
+<script src="js/xlsx-lite.js"></script>
+<script src="js/report.js"></script>
 </body>
 </html>

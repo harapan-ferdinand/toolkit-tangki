@@ -118,9 +118,11 @@
   function route() {
     const id = decodeURIComponent((location.hash || '#beranda').slice(1));
     const main = $('#main');
+    main.onclick = main.oninput = main.onchange = null;
     if (byId[id]) renderModule(byId[id]);
     else if (id === 'tangki') renderTank();
     else if (id === 'ringkasan') renderSummary();
+    else if (window.TKViews && window.TKViews[id]) window.TKViews[id]($('#main'));
     else renderHome();
     markActive();
     document.body.classList.remove('nav-open');
@@ -177,6 +179,7 @@
       ${sampleBanner()}
       <header class="page-h"><p class="eyebrow">Profil</p><h1>Data Tangki</h1>
       <p class="lead">Nilai di sini otomatis dipakai oleh modul yang ditandai <span class="lnk-ic">⛓</span>. Ubah di modul bila satu perhitungan butuh nilai lain.</p></header>
+      <div class="card chart-card" id="tk-viz"></div>
       <div class="card form-grid">
         ${fld('tag', 'Tag / nomor tangki', '', 'text')}${fld('name', 'Nama / keterangan', '', 'text')}
         ${fld('loc', 'Lokasi', '', 'text')}${fld('service', 'Produk / service', '', 'text')}
@@ -205,6 +208,10 @@
       S.tank[k] = el.tagName === 'SELECT' || ['tag', 'name', 'loc', 'service'].includes(k) ? el.value : (isNaN(parseNum(el.value)) ? el.value : parseNum(el.value));
       changed();
     }));
+    const drawTank = () => { $('#tk-viz').innerHTML = tankDrawing('Konfigurasi tangki (tampak samping)'); };
+    drawTank();
+    $('#main').oninput = drawTank;
+    $('#main').onchange = drawTank;
     $('#tk-courses').addEventListener('input', e => {
       const el = e.target; if (!el.dataset.c) return;
       S.tank.courses[+el.dataset.i][el.dataset.c] = parseNum(el.value);
@@ -224,6 +231,11 @@
     $('#tk-sample').onclick = () => confirmInline($('#tk-sample'), 'Timpa dengan data contoh?', () => {
       S = { tank: JSON.parse(JSON.stringify(SAMPLE_TANK)), mods: {}, sample: true }; changed(); renderTank();
     });
+  }
+
+  function tankDrawing(title) {
+    const t = S.tank;
+    return window.TKViz.tank({ title, D: parseNum(t.D), Hs: parseNum(t.Hs), HL: parseNum(t.HL), roof: t.roofType, courses: (t.courses || []).map(c => ({ w: parseNum(c.w), t: parseNum(c.tNom) })) });
   }
 
   /* ----- Modul ----- */
@@ -281,7 +293,7 @@
       if (fd.link && !el.closest('.fld').querySelector('.relink')) { const ic = el.closest('.fld').querySelector('.lnk-ic'); if (ic) ic.outerHTML = `<button class="relink" data-relink="${fd.k}" title="Ikuti Data Tangki lagi">↺ data tangki</button>`; }
       changed(m);
     }));
-    main.addEventListener('click', e => {
+    main.onclick = (e => {
       const rl = e.target.closest('[data-relink]');
       if (rl) { delete st.f[rl.dataset.relink]; changed(m); renderModule(m); }
     });
@@ -348,7 +360,7 @@
       ${ck.length ? `<div class="card flush"><div class="tbl-wrap"><table class="checks"><thead><tr><th>Pemeriksaan</th><th class="r">Terukur</th><th class="r">Kriteria</th><th>Ref.</th><th>Status</th></tr></thead><tbody>
         ${ck.map(c => `<tr class="row-${okCls(c.ok)}"><td>${esc(c.l)}</td><td class="r num">${c.meas != null ? esc(c.meas) + (c.u ? ` <small>${esc(c.u)}</small>` : '') : ''}</td><td class="r num">${c.lim != null ? esc(c.lim) : ''}</td><td class="ref-c">${esc(c.ref || '')}</td><td><b class="pill st-${okCls(c.ok)}">${okTxt(c.ok)}</b></td></tr>`).join('')}
       </tbody></table></div></div>` : ''}
-      ${r.chart && !compact ? `<div class="card chart-card">${chartSvg(r.chart)}</div>` : ''}
+      ${!compact ? [].concat(r.charts || [], r.chart ? [r.chart] : []).map(ch => `<div class="card chart-card">${chartSvg(ch)}</div>`).join('') : ''}
       ${r.table ? `<div class="card flush"><div class="tbl-wrap"><table class="out"><thead><tr>${r.table.head.map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>
         ${r.table.rows.map(row => `<tr>${row.map(c => c && typeof c === 'object' ? `<td><b class="pill st-${okCls(c.ok)}">${okTxt(c.ok)}</b></td>` : `<td class="num">${esc(c)}</td>`).join('')}</tr>`).join('')}
       </tbody></table></div></div>` : ''}
@@ -359,6 +371,8 @@
 
   /* ---------- Chart SVG ---------- */
   function chartSvg(ch) {
+    if (ch.type === 'tank') return window.TKViz.tank(Object.assign({ roof: S.tank.roofType, Hs: parseNum(S.tank.Hs) }, ch));
+    if (ch.type === 'polar') return window.TKViz.polar(ch);
     const W = 640, H = 260, L = 52, R = 14, T = 26, B = 42;
     const pw = W - L - R, ph = H - T - B;
     const bars = ch.type === 'bars';
@@ -501,5 +515,5 @@
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
   // ekspos untuk pengujian
-  window.TKApp = { run, byId };
+  window.TKApp = { run, byId, get S() { return S; }, CATS, M, esc, f, parseNum, fieldRaw, fieldVal, rowsRaw, isLinked, resultsHtml, chartSvg, tankDrawing, STATUS_TXT, okTxt, okCls, catOf, toast, copyText, inFrame, save };
 })();
